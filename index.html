@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>FinControl</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -39,7 +38,6 @@
             overflow-x: hidden;
         }
         
-        /* BOTTOM NAV */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -74,14 +72,15 @@
         .nav-icon { font-size: 1.4rem; }
         .nav-label { font-size: 0.65rem; font-weight: 500; }
         
-        /* MAIN CONTENT */
         .main-content {
             padding: 20px 20px 100px;
             max-width: 600px;
             margin: 0 auto;
         }
         
-        /* BALANCE CARD - GLASSMORPHISM */
+        .hidden { display: none !important; }
+        
+        /* BALANCE CARD */
         .balance-card {
             background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.1) 100%);
             border: 1px solid rgba(99,102,241,0.2);
@@ -92,35 +91,15 @@
             overflow: hidden;
         }
         
-        .balance-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-        
         .balance-label { 
             font-size: 0.875rem; 
             color: var(--text-secondary);
-            position: relative;
-            z-index: 1;
         }
         
         .balance-value { 
             font-size: 2.5rem; 
             font-weight: 700; 
             margin: 8px 0;
-            position: relative;
-            z-index: 1;
         }
         
         .balance-trend {
@@ -128,8 +107,6 @@
             gap: 16px;
             font-size: 0.8rem;
             color: var(--text-secondary);
-            position: relative;
-            z-index: 1;
         }
         
         /* QUICK ACTIONS */
@@ -163,9 +140,7 @@
         .quick-btn.calc { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--info); }
         
         /* SECTIONS */
-        .section {
-            margin-bottom: 24px;
-        }
+        .section { margin-bottom: 24px; }
         
         .section-header {
             display: flex;
@@ -185,64 +160,6 @@
             cursor: pointer;
         }
         
-        /* EXPANDABLE CARDS */
-        .expandable-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .expandable-card.expanded {
-            background: var(--surface-light);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            cursor: pointer;
-            gap: 12px;
-        }
-        
-        .card-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            background: rgba(99,102,241,0.1);
-        }
-        
-        .card-info { flex: 1; }
-        .card-title { font-weight: 600; font-size: 0.95rem; }
-        .card-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
-        .card-amount { font-weight: 700; font-size: 1.1rem; }
-        .card-arrow { 
-            transition: transform 0.3s; 
-            color: var(--text-muted);
-            font-size: 1.2rem;
-        }
-        .expanded .card-arrow { transform: rotate(180deg); }
-        
-        .card-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .expanded .card-content {
-            max-height: 500px;
-        }
-        
-        .card-inner {
-            padding: 0 16px 16px;
-        }
-        
         /* TRANSACTION LIST */
         .transaction-list {
             display: flex;
@@ -255,13 +172,13 @@
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: rgba(255,255,255,0.03);
+            background: var(--surface);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
         }
         
-        .transaction-item:active { background: rgba(255,255,255,0.06); }
+        .transaction-item:active { background: var(--surface-light); }
         
         .tx-icon {
             width: 40px;
@@ -271,7 +188,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            background: var(--surface);
+            background: var(--bg);
         }
         
         .tx-info { flex: 1; }
@@ -280,6 +197,50 @@
         .tx-amount { font-weight: 700; font-size: 0.95rem; }
         .tx-amount.income { color: var(--success); }
         .tx-amount.expense { color: var(--danger); }
+        
+        /* LOAN CARDS */
+        .loan-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .loan-card:active { background: var(--surface-light); }
+        
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .loan-title { font-weight: 600; }
+        .loan-amount { font-size: 1.2rem; font-weight: 700; color: var(--danger); }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--bg);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        .loan-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
         
         /* BOTTOM SHEET */
         .bottom-sheet {
@@ -340,7 +301,7 @@
         
         .sheet-content { padding: 0 20px 40px; }
         
-        /* INPUT STYLES */
+        /* INPUTS */
         .input-group {
             margin-bottom: 20px;
         }
@@ -360,7 +321,6 @@
             border-radius: var(--radius-sm);
             color: var(--text);
             font-size: 1rem;
-            transition: all 0.2s;
         }
         
         .input-field:focus {
@@ -450,24 +410,37 @@
         .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* CALCULATOR - REDUZIDO 15% */
+        .btn-secondary {
+            width: 100%;
+            padding: 14px;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* CALCULATOR */
         .calc-display {
             background: var(--bg);
-            padding: 12px 16px;
+            padding: 16px;
             border-radius: var(--radius-sm);
             margin-bottom: 12px;
             text-align: right;
         }
         
         .calc-expr { 
-            font-size: 0.77rem;
+            font-size: 0.9rem;
             color: var(--text-muted); 
-            min-height: 16px;
+            min-height: 20px;
             word-break: break-all; 
         }
         
         .calc-result { 
-            font-size: 2.1rem;
+            font-size: 2.2rem;
             font-weight: 700; 
             color: var(--info); 
         }
@@ -475,7 +448,7 @@
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+            gap: 10px;
         }
         
         .calc-btn {
@@ -485,12 +458,12 @@
             justify-content: center;
             background: var(--surface-light);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--text);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
-            height: 52px;
+            height: 60px;
         }
         
         .calc-btn:active { background: var(--primary); }
@@ -498,85 +471,7 @@
         .calc-btn.eq { background: var(--success); color: white; }
         .calc-btn.wide { grid-column: span 2; aspect-ratio: 2; }
         
-        /* LOAN DETAIL STYLES */
-        .loan-detail-card {
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        
-        .loan-detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .loan-detail-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        .loan-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .loan-badge.sac { background: rgba(59,130,246,0.2); color: var(--info); }
-        .loan-badge.price { background: rgba(139,92,246,0.2); color: var(--purple); }
-        
-        .loan-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .loan-stat {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: var(--radius-xs);
-        }
-        
-        .loan-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        
-        .loan-stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        
-        .loan-progress {
-            margin: 20px 0;
-        }
-        
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.875rem;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background: var(--bg);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--success));
-            border-radius: 4px;
-            transition: width 0.3s;
-        }
-        
+        /* LOAN DETAIL */
         .installment-table {
             width: 100%;
             border-collapse: collapse;
@@ -597,13 +492,8 @@
             font-size: 0.8rem;
         }
         
-        .installment-table tr.paid {
-            opacity: 0.5;
-        }
-        
-        .installment-table tr.next {
-            background: rgba(99,102,241,0.1);
-        }
+        .installment-table tr.paid { opacity: 0.5; }
+        .installment-table tr.next { background: rgba(99,102,241,0.1); }
         
         .amortization-tabs {
             display: flex;
@@ -622,55 +512,12 @@
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s;
         }
         
         .amortization-tab.active {
             border-color: var(--primary);
             color: var(--primary);
             background: rgba(99,102,241,0.1);
-        }
-        
-        .chart-container {
-            background: var(--bg);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin: 20px 0;
-            height: 200px;
-        }
-        
-        .early-payment-box {
-            background: rgba(16,185,129,0.1);
-            border: 1px solid rgba(16,185,129,0.3);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-top: 20px;
-        }
-        
-        .early-payment-title {
-            color: var(--success);
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .comparison-table {
-            width: 100%;
-            margin-top: 12px;
-            font-size: 0.85rem;
-        }
-        
-        .comparison-table td {
-            padding: 8px 0;
-            color: var(--text-secondary);
-        }
-        
-        .comparison-table td:last-child {
-            text-align: right;
-            color: var(--text);
-            font-weight: 600;
         }
         
         /* TOAST */
@@ -696,53 +543,13 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        
-        /* HIDDEN */
-        .hidden { display: none !important; }
-        
-        /* ANIMATIONS */
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .animate-in {
-            animation: slideUp 0.3s ease;
-        }
-        
-        /* STATS CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
     </style>
 </head>
 <body>
     <!-- MAIN VIEW (HOME) -->
     <div class="main-content" id="main-view">
         <!-- BALANCE CARD -->
-        <div class="balance-card animate-in">
+        <div class="balance-card">
             <div class="balance-label">Saldo Total</div>
             <div class="balance-value" id="total-balance">R$ 0,00</div>
             <div class="balance-trend">
@@ -753,20 +560,20 @@
         </div>
         
         <!-- QUICK ACTIONS -->
-        <div class="quick-actions animate-in">
-            <button class="quick-btn expense" onclick="openSheet('expense')">
+        <div class="quick-actions">
+            <button class="quick-btn expense" onclick="openTransactionSheet('expense')">
                 <span>💸</span> Despesa
             </button>
-            <button class="quick-btn income" onclick="openSheet('income')">
+            <button class="quick-btn income" onclick="openTransactionSheet('income')">
                 <span>💵</span> Receita
             </button>
-            <button class="quick-btn calc" onclick="openSheet('calc')">
+            <button class="quick-btn calc" onclick="openSheet('calc-sheet')">
                 <span>🧮</span> Calc
             </button>
         </div>
         
         <!-- TRANSACTIONS SECTION -->
-        <div class="section animate-in">
+        <div class="section">
             <div class="section-header">
                 <span class="section-title">Últimos Lançamentos</span>
                 <span class="see-all" onclick="showAllTransactions()">Ver todos</span>
@@ -776,40 +583,14 @@
             </div>
         </div>
         
-        <!-- EXPANDABLE SECTIONS -->
-        <div class="section animate-in">
-            <div class="expandable-card" onclick="toggleCard(this)">
-                <div class="card-header">
-                    <div class="card-icon">🏦</div>
-                    <div class="card-info">
-                        <div class="card-title">Meus Bancos</div>
-                        <div class="card-subtitle" id="banks-count">0 contas</div>
-                    </div>
-                    <div class="card-amount" id="banks-total">R$ 0</div>
-                    <div class="card-arrow">▼</div>
-                </div>
-                <div class="card-content">
-                    <div class="card-inner" id="banks-list">
-                        <!-- Banks list -->
-                    </div>
-                </div>
+        <!-- LOANS SECTION -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">Empréstimos e Financiamentos</span>
+                <span class="see-all" onclick="openSheet('loan-sheet')">+ Novo</span>
             </div>
-            
-            <div class="expandable-card" onclick="toggleCard(this)">
-                <div class="card-header">
-                    <div class="card-icon">💳</div>
-                    <div class="card-info">
-                        <div class="card-title">Empréstimos e Financiamentos</div>
-                        <div class="card-subtitle" id="loans-count">0 ativos</div>
-                    </div>
-                    <div class="card-amount" id="loans-total" style="color: var(--danger);">R$ 0</div>
-                    <div class="card-arrow">▼</div>
-                </div>
-                <div class="card-content">
-                    <div class="card-inner" id="loans-list">
-                        <!-- Loans list -->
-                    </div>
-                </div>
+            <div id="loans-list">
+                <!-- Populated by JS -->
             </div>
         </div>
     </div>
@@ -817,21 +598,21 @@
     <!-- ALL TRANSACTIONS VIEW -->
     <div class="main-content hidden" id="all-transactions-view">
         <div class="section-header" style="margin-bottom: 20px;">
-            <button class="quick-btn" onclick="backToMain()" style="padding: 8px 16px;">← Voltar</button>
+            <button class="quick-btn" onclick="showView('main-view')" style="padding: 8px 16px;">← Voltar</button>
             <span class="section-title">Todos os Lançamentos</span>
         </div>
         <div class="transaction-list" id="full-transactions-list"></div>
     </div>
 
     <!-- BOTTOM SHEET OVERLAY -->
-    <div class="sheet-overlay" onclick="closeSheet()"></div>
+    <div class="sheet-overlay" onclick="closeAllSheets()"></div>
     
-    <!-- EXPENSE/INCOME SHEET -->
+    <!-- TRANSACTION SHEET -->
     <div class="bottom-sheet" id="transaction-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
             <h3 id="sheet-title">Nova Despesa</h3>
-            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
+            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
         <div class="sheet-content">
             <div class="amount-display" id="sheet-amount">R$ 0,00</div>
@@ -863,7 +644,7 @@
             </div>
             
             <div class="input-group" id="installment-group">
-                <label class="input-label" style="display: flex; align-items: center; gap: 8px;">
+                <label class="input-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="checkbox" id="tx-installment" onchange="toggleInstallment()">
                     Parcelar compra
                 </label>
@@ -896,7 +677,7 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header">
             <h3>Calculadora</h3>
-            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
+            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
         <div class="sheet-content">
             <div class="calc-display">
@@ -927,43 +708,23 @@
                 <button class="calc-btn wide" onclick="calcNum(0)">0</button>
                 <button class="calc-btn" onclick="calcNum('.')">.</button>
             </div>
-            <button class="btn-primary" onclick="useCalcResult()" style="margin-top: 12px; padding: 14px;">
+            <button class="btn-primary" onclick="useCalcResult()" style="margin-top: 16px;">
                 Usar Resultado
             </button>
         </div>
     </div>
     
-    <!-- BANK SHEET -->
-    <div class="bottom-sheet" id="bank-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <h3>Adicionar Banco</h3>
-            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
-        </div>
-        <div class="sheet-content">
-            <div class="input-group">
-                <label class="input-label">Nome do Banco</label>
-                <input type="text" class="input-field" id="bank-name" placeholder="Ex: Nubank">
-            </div>
-            <div class="input-group">
-                <label class="input-label">Saldo Inicial</label>
-                <input type="number" class="input-field" id="bank-initial" placeholder="0,00" step="0.01">
-            </div>
-            <button class="btn-primary" onclick="saveBank()">Adicionar</button>
-        </div>
-    </div>
-    
-    <!-- LOAN/FINANCING SHEET -->
+    <!-- LOAN SHEET -->
     <div class="bottom-sheet" id="loan-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
             <h3>Novo Empréstimo/Financiamento</h3>
-            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
+            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
         <div class="sheet-content">
             <div class="input-group">
                 <label class="input-label">Descrição</label>
-                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Financiamento Carro, Empréstimo Consignado">
+                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Financiamento Carro">
             </div>
             
             <div class="input-group">
@@ -978,17 +739,17 @@
             
             <div class="input-group">
                 <label class="input-label">Número de Parcelas</label>
-                <input type="number" class="input-field" id="loan-months" placeholder="48" min="1" max="480">
+                <input type="number" class="input-field" id="loan-months" placeholder="48" min="1">
             </div>
             
             <div class="input-group">
                 <label class="input-label">Sistema de Amortização</label>
                 <div class="amortization-tabs">
                     <div class="amortization-tab active" onclick="selectAmortization('price')" id="tab-price">
-                        PRICE<br><small>Parcelas Fixas</small>
+                        PRICE<br><small style="font-size: 0.75rem; font-weight: 400;">Parcelas Fixas</small>
                     </div>
                     <div class="amortization-tab" onclick="selectAmortization('sac')" id="tab-sac">
-                        SAC<br><small>Parcelas Decrescentes</small>
+                        SAC<br><small style="font-size: 0.75rem; font-weight: 400;">Decrescentes</small>
                     </div>
                 </div>
             </div>
@@ -1007,7 +768,7 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header">
             <h3>Detalhes do Financiamento</h3>
-            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
+            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
         <div class="sheet-content" id="loan-detail-content">
             <!-- Populated by JS -->
@@ -1016,22 +777,22 @@
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="setNav('home')">
+        <div class="nav-item active" onclick="setNav(this, 'home')">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Início</span>
         </div>
-        <div class="nav-item" onclick="setNav('banks')">
+        <div class="nav-item" onclick="setNav(this, 'banks')">
             <span class="nav-icon">🏦</span>
             <span class="nav-label">Bancos</span>
         </div>
-        <div class="nav-item" onclick="openSheet('expense')" style="background: var(--primary); border-radius: 50%; width: 56px; height: 56px; margin-top: -20px;">
+        <div class="nav-item" onclick="openTransactionSheet('expense')" style="background: var(--primary); border-radius: 50%; width: 56px; height: 56px; margin-top: -20px;">
             <span class="nav-icon" style="font-size: 1.8rem;">➕</span>
         </div>
-        <div class="nav-item" onclick="setNav('loans')">
+        <div class="nav-item" onclick="setNav(this, 'loans')">
             <span class="nav-icon">💳</span>
             <span class="nav-label">Dívidas</span>
         </div>
-        <div class="nav-item" onclick="setNav('more')">
+        <div class="nav-item" onclick="setNav(this, 'more')">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Mais</span>
         </div>
@@ -1041,7 +802,7 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // DATA
+        // ==================== DATA ====================
         const defaultCats = {
             expense: { food: '🍔 Alimentação', transport: '🚌 Transporte', leisure: '🎮 Lazer', health: '💊 Saúde', housing: '🏠 Moradia', shopping: '🛍️ Compras' },
             income: { salary: '💰 Salário', freelance: '💻 Freelance', investment: '📈 Investimentos', gift: '🎁 Presente' }
@@ -1057,174 +818,85 @@
         let selectedCategory = null;
         let calcExpr = '';
         let currentAmortization = 'price';
-        let selectedLoan = null;
-        
-        // INIT
-        document.addEventListener('DOMContentLoaded', () => {
+        let selectedLoanIndex = null;
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App iniciado');
             document.getElementById('tx-first-date').valueAsDate = new Date();
             document.getElementById('loan-start-date').valueAsDate = new Date();
             updateUI();
         });
         
-        // UI UPDATES
-        function updateUI() {
-            // Balance
-            const income = expenses.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
-            const expense = expenses.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
-            const bankBalance = banks.reduce((s, b) => s + (b.initial || 0), 0) + 
-                expenses.reduce((s, e) => {
-                    const b = banks.find(bk => bk.id === e.bankId);
-                    if (!b) return s;
-                    return s + (e.type === 'income' ? e.value : -e.value);
-                }, 0);
-            const loanTotal = loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0);
-            
-            document.getElementById('total-balance').textContent = `R$ ${bankBalance.toFixed(2)}`;
-            document.getElementById('income-badge').textContent = `↑ R$ ${income.toFixed(2)}`;
-            document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toFixed(2)}`;
-            document.getElementById('loan-badge').textContent = `💳 R$ ${loanTotal.toFixed(2)}`;
-            
-            // Banks
-            document.getElementById('banks-count').textContent = `${banks.length} conta${banks.length !== 1 ? 's' : ''}`;
-            document.getElementById('banks-total').textContent = `R$ ${bankBalance.toFixed(0)}`;
-            document.getElementById('banks-list').innerHTML = banks.map(b => `
-                <div class="transaction-item">
-                    <div class="tx-icon">🏦</div>
-                    <div class="tx-info">
-                        <div class="tx-title">${b.name}</div>
-                        <div class="tx-date">Inicial: R$ ${b.initial.toFixed(2)}</div>
-                    </div>
-                    <div class="tx-amount">R$ ${(b.initial + getBankBalance(b.id)).toFixed(2)}</div>
-                </div>
-            `).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum banco cadastrado</div>';
-            
-            // Loans
-            document.getElementById('loans-count').textContent = `${loans.length} ativo${loans.length !== 1 ? 's' : ''}`;
-            document.getElementById('loans-total').textContent = `R$ ${loanTotal.toFixed(0)}`;
-            document.getElementById('loans-list').innerHTML = loans.map((l, index) => `
-                <div class="loan-detail-card" onclick="viewLoanDetail(${index})" style="cursor: pointer;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 1rem;">${l.desc}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                                ${l.amortization === 'sac' ? 'SAC - Parcelas Decrescentes' : 'PRICE - Parcelas Fixas'}
-                            </div>
-                        </div>
-                        <span class="loan-badge ${l.amortization}">${l.amortization.toUpperCase()}</span>
-                    </div>
-                    <div class="loan-progress">
-                        <div class="progress-header">
-                            <span>Progresso</span>
-                            <span>${l.parcelasPagas || 0} de ${l.parcelas} parcelas</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 0.875rem;">
-                        <span style="color: var(--text-muted);">Saldo Devedor:</span>
-                        <span style="font-weight: 700; color: var(--danger);">R$ ${(l.saldoDevedor || 0).toFixed(2)}</span>
-                    </div>
-                </div>
-            `).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo cadastrado</div>';
-            
-            // Transactions
-            const recent = expenses.slice(0, 5);
-            document.getElementById('recent-list').innerHTML = recent.map(e => renderTx(e)).join('') || 
-                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento ainda</div>';
-            
-            // Bank select
-            const bankSelect = document.getElementById('tx-bank');
-            if (bankSelect) {
-                bankSelect.innerHTML = '<option value="">Selecione...</option>' + 
-                    banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-            }
-        }
-        
-        function getBankBalance(bankId) {
-            return expenses.filter(e => e.bankId === bankId).reduce((s, e) => 
-                s + (e.type === 'income' ? e.value : -e.value), 0);
-        }
-        
-        function renderTx(e) {
-            const isIncome = e.type === 'income';
-            const cat = categories[e.type]?.[e.category] || e.category;
-            return `
-            <div class="transaction-item" onclick="editTransaction(${e.id})">
-                <div class="tx-icon">${cat.split(' ')[0]}</div>
-                <div class="tx-info">
-                    <div class="tx-title">${e.desc || cat}</div>
-                    <div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div>
-                </div>
-                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">
-                    ${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}
-                </div>
-            </div>
-            `;
-        }
-        
-        // NAVIGATION
-        function setNav(nav) {
+        // ==================== NAVIGATION ====================
+        function setNav(element, nav) {
+            console.log('Nav:', nav);
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            element.classList.add('active');
             
             if (nav === 'home') {
-                document.getElementById('main-view').classList.remove('hidden');
-                document.getElementById('all-transactions-view').classList.add('hidden');
+                showView('main-view');
             } else if (nav === 'banks') {
-                openSheet('bank');
-                document.querySelectorAll('.nav-item')[0].classList.add('active');
-                event.currentTarget.classList.remove('active');
+                showToast('Funcionalidade de bancos em desenvolvimento');
             } else if (nav === 'loans') {
-                openSheet('loan');
-                document.querySelectorAll('.nav-item')[0].classList.add('active');
-                event.currentTarget.classList.remove('active');
+                openSheet('loan-sheet');
+            } else if (nav === 'more') {
+                showToast('Configurações em desenvolvimento');
             }
+        }
+        
+        function showView(viewId) {
+            console.log('Show view:', viewId);
+            document.querySelectorAll('.main-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
         }
         
         function showAllTransactions() {
-            document.getElementById('main-view').classList.add('hidden');
-            document.getElementById('all-transactions-view').classList.remove('hidden');
-            document.getElementById('full-transactions-list').innerHTML = expenses.map(e => renderTx(e)).join('');
+            console.log('Show all transactions');
+            const list = document.getElementById('full-transactions-list');
+            list.innerHTML = expenses.map(e => renderTx(e)).join('') || 
+                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
+            showView('all-transactions-view');
         }
         
-        function backToMain() {
-            document.getElementById('main-view').classList.remove('hidden');
-            document.getElementById('all-transactions-view').classList.add('hidden');
-        }
-        
-        // BOTTOM SHEETS
-        function openSheet(type) {
-            currentType = type;
+        // ==================== SHEETS ====================
+        function openSheet(sheetId) {
+            console.log('Open sheet:', sheetId);
             document.querySelector('.sheet-overlay').classList.add('active');
+            document.getElementById(sheetId).classList.add('active');
             
-            if (type === 'expense' || type === 'income') {
-                document.getElementById('sheet-title').textContent = type === 'expense' ? 'Nova Despesa' : 'Nova Receita';
-                document.getElementById('installment-group').style.display = type === 'expense' ? 'block' : 'none';
-                document.getElementById('transaction-sheet').classList.add('active');
+            if (sheetId === 'transaction-sheet') {
                 renderCategories();
-                currentAmount = 0;
                 updateAmount();
-            } else if (type === 'calc') {
-                document.getElementById('calc-sheet').classList.add('active');
-            } else if (type === 'bank') {
-                document.getElementById('bank-sheet').classList.add('active');
-            } else if (type === 'loan') {
-                document.getElementById('loan-sheet').classList.add('active');
             }
         }
         
-        function closeSheet() {
-            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
-            document.querySelector('.sheet-overlay').classList.remove('active');
+        function openTransactionSheet(type) {
+            console.log('Open transaction sheet:', type);
+            currentType = type;
+            document.getElementById('sheet-title').textContent = type === 'expense' ? 'Nova Despesa' : 'Nova Receita';
+            document.getElementById('installment-group').style.display = type === 'expense' ? 'block' : 'none';
+            
             currentAmount = 0;
             selectedCategory = null;
-            calcExpr = '';
-            selectedLoan = null;
+            document.getElementById('tx-desc').value = '';
+            document.getElementById('tx-installment').checked = false;
+            document.getElementById('installment-options').style.display = 'none';
+            
+            openSheet('transaction-sheet');
+            renderCategories();
+            updateAmount();
         }
         
-        // KEYPAD
+        function closeAllSheets() {
+            console.log('Close all sheets');
+            document.querySelector('.sheet-overlay').classList.remove('active');
+            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+        }
+        
+        // ==================== KEYPAD ====================
         function addDigit(d) {
+            console.log('Add digit:', d);
             let cents = Math.round(currentAmount * 100);
             
             if (cents === 0 && d === 0) {
@@ -1242,6 +914,7 @@
         }
         
         function removeDigit() {
+            console.log('Remove digit');
             let cents = Math.round(currentAmount * 100);
             cents = Math.floor(cents / 10);
             currentAmount = cents / 100;
@@ -1258,28 +931,34 @@
             document.getElementById('installment-options').style.display = show ? 'block' : 'none';
         }
         
-        // CATEGORIES
+        // ==================== CATEGORIES ====================
         function renderCategories() {
             const cats = categories[currentType] || {};
-            document.getElementById('tx-categories').innerHTML = Object.entries(cats).map(([id, name]) => `
-                <div class="category-item ${selectedCategory === id ? 'selected' : ''}" onclick="selectCat('${id}')">
+            const html = Object.entries(cats).map(([id, name]) => `
+                <div class="category-item ${selectedCategory === id ? 'selected' : ''}" onclick="selectCategory('${id}')">
                     <span class="cat-emoji">${name.split(' ')[0]}</span>
                     <span class="cat-name">${name.split(' ').slice(1).join(' ')}</span>
                 </div>
             `).join('');
+            document.getElementById('tx-categories').innerHTML = html;
         }
         
-        function selectCat(id) {
+        function selectCategory(id) {
+            console.log('Select category:', id);
             selectedCategory = id;
             renderCategories();
             updateAmount();
         }
         
-        // SAVE TRANSACTION
+        // ==================== SAVE TRANSACTION ====================
         function saveTransaction() {
+            console.log('Save transaction');
+            if (currentAmount <= 0 || !selectedCategory) return;
+            
             const desc = document.getElementById('tx-desc').value;
             const bankId = document.getElementById('tx-bank').value;
             const isInstallment = document.getElementById('tx-installment').checked;
+            const catName = categories[currentType][selectedCategory] || 'Desconhecido';
             
             if (isInstallment && currentType === 'expense') {
                 const parcelas = parseInt(document.getElementById('tx-parcelas').value);
@@ -1294,7 +973,7 @@
                         type: currentType,
                         value: currentAmount,
                         category: selectedCategory,
-                        desc: `${desc || 'Parcela'} ${i+1}/${parcelas}`,
+                        desc: `${desc || catName} ${i+1}/${parcelas}`,
                         bankId,
                         date: date.toISOString().split('T')[0],
                         groupId
@@ -1307,7 +986,7 @@
                     type: currentType,
                     value: currentAmount,
                     category: selectedCategory,
-                    desc,
+                    desc: desc || catName,
                     bankId,
                     date: new Date().toISOString().split('T')[0]
                 });
@@ -1315,11 +994,11 @@
             }
             
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-            closeSheet();
+            closeAllSheets();
             updateUI();
         }
         
-        // CALCULATOR
+        // ==================== CALCULATOR ====================
         function calcNum(n) {
             calcExpr += n;
             document.getElementById('calc-expr').textContent = calcExpr;
@@ -1355,25 +1034,12 @@
             const res = parseFloat(document.getElementById('calc-res').textContent);
             if (res > 0) {
                 currentAmount = res;
-                closeSheet();
-                openSheet('expense');
+                closeAllSheets();
+                openTransactionSheet('expense');
             }
         }
         
-        // BANK
-        function saveBank() {
-            const name = document.getElementById('bank-name').value;
-            const initial = parseFloat(document.getElementById('bank-initial').value) || 0;
-            if (!name) return showToast('Digite o nome do banco');
-            
-            banks.push({ id: Date.now(), name, initial });
-            localStorage.setItem('fc_banks', JSON.stringify(banks));
-            showToast('🏦 Banco adicionado');
-            closeSheet();
-            updateUI();
-        }
-        
-        // LOAN / FINANCING
+        // ==================== LOAN / FINANCING ====================
         function selectAmortization(type) {
             currentAmortization = type;
             document.querySelectorAll('.amortization-tab').forEach(t => t.classList.remove('active'));
@@ -1381,7 +1047,6 @@
         }
         
         function calculatePrice(valor, taxa, parcelas) {
-            // Fórmula: PMT = PV * (i * (1+i)^n) / ((1+i)^n - 1)
             const i = taxa / 100;
             const pmt = valor * (i * Math.pow(1 + i, parcelas)) / (Math.pow(1 + i, parcelas) - 1);
             
@@ -1408,7 +1073,6 @@
         }
         
         function calculateSAC(valor, taxa, parcelas) {
-            // Amortização constante
             const amortizacao = valor / parcelas;
             const i = taxa / 100;
             
@@ -1435,7 +1099,308 @@
         }
         
         function saveLoan() {
+            console.log('Save loan');
             const desc = document.getElementById('loan-desc').value;
             const valor = parseFloat(document.getElementById('loan-value').value) || 0;
             const taxa = parseFloat(document.getElementById('loan-rate').value) || 0;
-            const parcelas = parseInt(document.getElementById('loan-months').
+            const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
+            const startDate = document.getElementById('loan-start-date').value;
+            
+            if (!desc || valor <= 0 || taxa < 0 || parcelas <= 0) {
+                showToast('Preencha todos os campos corretamente');
+                return;
+            }
+            
+            let calc;
+            if (currentAmortization === 'price') {
+                calc = calculatePrice(valor, taxa, parcelas);
+            } else {
+                calc = calculateSAC(valor, taxa, parcelas);
+            }
+            
+            const loan = {
+                id: Date.now(),
+                desc,
+                valor,
+                taxa,
+                parcelas,
+                amortization: currentAmortization,
+                startDate,
+                parcelaAtual: 1,
+                parcelasPagas: 0,
+                saldoDevedor: valor,
+                totalJuros: calc.totalJuros,
+                schedule: calc.schedule
+            };
+            
+            loans.push(loan);
+            localStorage.setItem('fc_loans', JSON.stringify(loans));
+            
+            showToast(`💳 ${currentAmortization.toUpperCase()} calculado e salvo!`);
+            closeAllSheets();
+            updateUI();
+            viewLoanDetail(loans.length - 1);
+        }
+        
+        function viewLoanDetail(index) {
+            console.log('View loan detail:', index);
+            selectedLoanIndex = index;
+            const loan = loans[index];
+            if (!loan) return;
+            
+            const currentParcel = loan.schedule[loan.parcelasPagas] || loan.schedule[loan.schedule.length - 1];
+            const nextParcel = loan.schedule[loan.parcelasPagas] || null;
+            
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 1.3rem; margin-bottom: 8px;">${loan.desc}</h2>
+                    <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                        ${loan.amortization.toUpperCase()}
+                    </span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Valor Financiado</div>
+                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.valor.toFixed(2)}</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Taxa de Juros</div>
+                        <div style="font-size: 1.2rem; font-weight: 700;">${loan.taxa}% a.m.</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Total de Juros</div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toFixed(2)}</div>
+                    </div>
+                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Saldo Devedor</div>
+                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.saldoDevedor.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.875rem;">
+                        <span>Progresso</span>
+                        <span>${loan.parcelasPagas} de ${loan.parcelas} parcelas</span>
+                    </div>
+                    <div style="height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); border-radius: 4px; width: ${(loan.parcelasPagas / loan.parcelas) * 100}%"></div>
+                    </div>
+                </div>
+            `;
+            
+            if (nextParcel) {
+                html += `
+                    <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 4px;">Próxima Parcela (#${nextParcel.parcela})</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">R$ ${nextParcel.valor.toFixed(2)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">
+                            Juros: R$ ${nextParcel.juros.toFixed(2)} | Amortização: R$ ${nextParcel.amortizacao.toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">
+                        💸 Pagar Parcela ${nextParcel.parcela}
+                    </button>
+                `;
+            }
+            
+            // Tabela de parcelas (primeiras 12 ou todas pagas + próximas 3)
+            let tableRows = '';
+            const startIdx = Math.max(0, loan.parcelasPagas - 2);
+            const endIdx = Math.min(loan.schedule.length, startIdx + 15);
+            
+            for (let i = startIdx; i < endIdx; i++) {
+                const p = loan.schedule[i];
+                const isPaid = i < loan.parcelasPagas;
+                const isNext = i === loan.parcelasPagas;
+                
+                tableRows += `
+                    <tr class="${isPaid ? 'paid' : ''} ${isNext ? 'next' : ''}">
+                        <td>${p.parcela}</td>
+                        <td>R$ ${p.valor.toFixed(2)}</td>
+                        <td>R$ ${p.juros.toFixed(2)}</td>
+                        <td>R$ ${p.amortizacao.toFixed(2)}</td>
+                        <td>R$ ${p.saldo.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            
+            html += `
+                <div style="margin-top: 24px;">
+                    <h4 style="margin-bottom: 12px; font-size: 1rem;">Tabela de Amortização</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="installment-table">
+                            <thead>
+                                <tr>
+                                    <th>Nº</th>
+                                    <th>Valor</th>
+                                    <th>Juros</th>
+                                    <th>Amort.</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${endIdx < loan.schedule.length ? `<div style="text-align: center; color: var(--text-muted); margin-top: 8px; font-size: 0.8rem;">... e mais ${loan.schedule.length - endIdx} parcelas</div>` : ''}
+                </div>
+                
+                <button class="btn-secondary" onclick="deleteLoan(${index})" style="color: var(--danger); border-color: var(--danger); margin-top: 20px;">
+                    🗑️ Excluir Financiamento
+                </button>
+            `;
+            
+            document.getElementById('loan-detail-content').innerHTML = html;
+            openSheet('loan-detail-sheet');
+        }
+        
+        function payLoanParcel(index) {
+            console.log('Pay loan parcel:', index);
+            const loan = loans[index];
+            if (!loan || loan.parcelasPagas >= loan.parcelas) {
+                showToast('Todas parcelas já pagas');
+                return;
+            }
+            
+            const parcel = loan.schedule[loan.parcelasPagas];
+            
+            // Add as expense
+            expenses.push({
+                id: Date.now(),
+                type: 'expense',
+                value: parcel.valor,
+                category: 'housing',
+                desc: `Parcela ${parcel.parcela}/${loan.parcelas} - ${loan.desc}`,
+                date: new Date().toISOString().split('T')[0]
+            });
+            
+            // Update loan
+            loan.parcelasPagas++;
+            loan.saldoDevedor = parcel.saldo;
+            
+            localStorage.setItem('fc_expenses', JSON.stringify(expenses));
+            localStorage.setItem('fc_loans', JSON.stringify(loans));
+            
+            showToast(`✅ Parcela ${parcel.parcela} paga!`);
+            updateUI();
+            viewLoanDetail(index);
+        }
+        
+        function deleteLoan(index) {
+            if (confirm('Tem certeza que deseja excluir este financiamento?')) {
+                loans.splice(index, 1);
+                localStorage.setItem('fc_loans', JSON.stringify(loans));
+                showToast('Financiamento removido');
+                closeAllSheets();
+                updateUI();
+            }
+        }
+        
+        // ==================== UI UPDATES ====================
+        function updateUI() {
+            console.log('Update UI');
+            
+            // Balance
+            const income = expenses.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
+            const expense = expenses.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
+            const bankBalance = banks.reduce((s, b) => s + (b.initial || 0), 0);
+            const loanTotal = loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0);
+            
+            document.getElementById('total-balance').textContent = `R$ ${bankBalance.toFixed(2)}`;
+            document.getElementById('income-badge').textContent = `↑ R$ ${income.toFixed(2)}`;
+            document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toFixed(2)}`;
+            document.getElementById('loan-badge').textContent = `💳 R$ ${loanTotal.toFixed(2)}`;
+            
+            // Bank select options
+            const bankSelect = document.getElementById('tx-bank');
+            if (bankSelect) {
+                bankSelect.innerHTML = '<option value="">Selecione...</option>' + 
+                    banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            }
+            
+            // Recent transactions
+            const recent = expenses.slice(0, 5);
+            document.getElementById('recent-list').innerHTML = recent.map(e => renderTx(e)).join('') || 
+                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento ainda</div>';
+            
+            // Loans list
+            document.getElementById('loans-list').innerHTML = loans.map((l, index) => `
+                <div class="loan-card" onclick="viewLoanDetail(${index})">
+                    <div class="loan-header">
+                        <div>
+                            <div class="loan-title">${l.desc}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                                ${l.amortization.toUpperCase()} | ${l.parcelas}x de R$ ${l.schedule[0]?.valor.toFixed(2) || '0.00'}
+                            </div>
+                        </div>
+                        <div class="loan-amount">R$ ${l.saldoDevedor.toFixed(0)}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div>
+                    </div>
+                    <div class="loan-stats">
+                        <span>${l.parcelasPagas || 0} de ${l.parcelas} parcelas</span>
+                        <span>Próxima: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo cadastrado</div>';
+        }
+        
+        function renderTx(e) {
+            const isIncome = e.type === 'income';
+            const cat = categories[e.type]?.[e.category] || e.category || '📦 Outros';
+            const emoji = cat.split(' ')[0];
+            const name = cat.split(' ').slice(1).join(' ') || cat;
+            
+            return `
+            <div class="transaction-item" onclick="if(confirm('Excluir este lançamento?')) deleteTransaction(${e.id})">
+                <div class="tx-icon">${emoji}</div>
+                <div class="tx-info">
+                    <div class="tx-title">${e.desc || name}</div>
+                    <div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">
+                    ${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}
+                </div>
+            </div>
+            `;
+        }
+        
+        function deleteTransaction(id) {
+            expenses = expenses.filter(e => e.id !== id);
+            localStorage.setItem('fc_expenses', JSON.stringify(expenses));
+            updateUI();
+            showToast('Lançamento removido');
+        }
+        
+        // ==================== TOAST ====================
+        function showToast(msg) {
+            console.log('Toast:', msg);
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+        
+        // Swipe to close sheets
+        let touchStartY = 0;
+        document.querySelectorAll('.bottom-sheet').forEach(sheet => {
+            sheet.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
+            sheet.addEventListener('touchend', e => {
+                if (e.changedTouches[0].clientY - touchStartY > 100) closeAllSheets();
+            });
+        });
+        
+        // Prevent double-tap zoom on buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchend', e => {
+                e.preventDefault();
+                btn.click();
+            });
+        });
+    </script>
+</body>
+</html>
