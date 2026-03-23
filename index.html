@@ -434,7 +434,6 @@
             color: var(--info); 
         }
         
-        /* CALCULADORA CORRIGIDA - MAIS COMPACTA */
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -809,11 +808,11 @@
             </div>
             <div class="input-group">
                 <label class="input-label">Valor (R$)</label>
-                <input type="number" class="input-field" id="loan-value" placeholder="50000" step="0.01">
+                <input type="text" inputmode="decimal" class="input-field" id="loan-value" placeholder="50000,00" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
             </div>
             <div class="input-group">
                 <label class="input-label">Taxa Mensal (%)</label>
-                <input type="number" class="input-field" id="loan-rate" placeholder="1.5" step="0.01">
+                <input type="text" inputmode="decimal" class="input-field" id="loan-rate" placeholder="1,3" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
             </div>
             <div class="input-group">
                 <label class="input-label">Parcelas</label>
@@ -856,7 +855,7 @@
             </div>
             <div class="input-group">
                 <label class="input-label">Saldo Inicial</label>
-                <input type="number" class="input-field" id="bank-initial" placeholder="0,00" step="0.01">
+                <input type="text" inputmode="decimal" class="input-field" id="bank-initial" placeholder="0,00" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
             </div>
             <div class="input-group">
                 <label class="input-label">Cor</label>
@@ -930,6 +929,12 @@
         let currentAmount = 0, currentType = 'expense', selectedCategory = null;
         let calcExpr = '', currentAmortization = 'price', selectedLoanIndex = null;
         let currentEditingBank = null, currentCatType = 'expense';
+
+        // Função auxiliar para converter string com vírgula para número
+        function parseNumber(value) {
+            if (!value) return 0;
+            return parseFloat(value.toString().replace(/\./g, '').replace(',', '.')) || 0;
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('tx-first-date').valueAsDate = new Date();
@@ -1085,10 +1090,11 @@
         
         function saveLoan() {
             const desc = document.getElementById('loan-desc').value;
-            const valor = parseFloat(document.getElementById('loan-value').value) || 0;
-            const taxa = parseFloat(document.getElementById('loan-rate').value) || 0;
+            const valor = parseNumber(document.getElementById('loan-value').value);
+            const taxa = parseNumber(document.getElementById('loan-rate').value);
             const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
             const startDate = document.getElementById('loan-start-date').value;
+            
             if (!desc || valor <= 0 || parcelas <= 0) { showToast('Preencha todos os campos'); return; }
             
             const calc = currentAmortization === 'price' ? calculatePrice(valor, taxa, parcelas) : calculateSAC(valor, taxa, parcelas);
@@ -1227,7 +1233,7 @@
             const bank = banks[index];
             document.getElementById('bank-sheet-title').textContent = 'Editar Banco';
             document.getElementById('bank-name').value = bank.name;
-            document.getElementById('bank-initial').value = bank.initial || 0;
+            document.getElementById('bank-initial').value = bank.initial ? bank.initial.toString().replace('.', ',') : '0';
             document.getElementById('bank-color').value = bank.color || '#6366f1';
             document.getElementById('btn-delete-bank').style.display = 'block';
             openSheet('bank-sheet');
@@ -1235,7 +1241,7 @@
 
         function saveBank() {
             const name = document.getElementById('bank-name').value.trim();
-            const initial = parseFloat(document.getElementById('bank-initial').value) || 0;
+            const initial = parseNumber(document.getElementById('bank-initial').value);
             const color = document.getElementById('bank-color').value;
             if (!name) { showToast('Digite o nome'); return; }
             if (currentEditingBank !== null) { banks[currentEditingBank] = { ...banks[currentEditingBank], name, initial, color }; showToast('Atualizado'); }
