@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>FinControl Pro</title>
+    <title>FinControl Master</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,6 +17,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --info: #3b82f6;
+            --purple: #8b5cf6;
             --bg-primary: #0f0f1a;
             --bg-secondary: #1a1a2e;
             --bg-card: rgba(255,255,255,0.05);
@@ -50,8 +51,8 @@
         .balance-card h2 { font-size: 2.2rem; font-weight: 700; margin: 5px 0; }
         .balance-trend { font-size: 0.875rem; opacity: 0.9; display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; }
         
-        .tab-nav { display: flex; padding: 10px; gap: 8px; background: var(--bg-secondary); margin: 15px; border-radius: var(--radius-sm); position: sticky; top: 130px; z-index: 99; }
-        .tab-btn { flex: 1; padding: 14px 8px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; }
+        .tab-nav { display: flex; padding: 10px; gap: 8px; background: var(--bg-secondary); margin: 15px; border-radius: var(--radius-sm); position: sticky; top: 130px; z-index: 99; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 14px 8px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; min-width: 80px; }
         .tab-btn.active { background: var(--primary); color: white; }
         
         .main-content { padding: 0 15px; }
@@ -61,6 +62,35 @@
         
         .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
         .section-card h3 { margin-bottom: 15px; font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
+        
+        .calculator-display { 
+            background: var(--bg-secondary); 
+            border: 2px solid var(--info); 
+            border-radius: var(--radius-sm); 
+            padding: 20px; 
+            text-align: right; 
+            margin-bottom: 15px;
+            min-height: 80px;
+        }
+        .calculator-display .expression { font-size: 0.9rem; color: var(--text-muted); min-height: 20px; word-break: break-all; }
+        .calculator-display .result { font-size: 2.2rem; font-weight: 700; color: var(--info); }
+        
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .calc-btn { 
+            background: var(--bg-secondary); 
+            border: 1px solid var(--border); 
+            color: var(--text-primary); 
+            height: 60px; 
+            border-radius: var(--radius-sm); 
+            font-size: 1.3rem; 
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .calc-btn:active { background: var(--info); }
+        .calc-btn.operator { background: var(--warning); color: white; }
+        .calc-btn.equals { background: var(--success); color: white; grid-column: span 2; }
+        .calc-btn.clear { background: var(--danger); color: white; }
+        .calc-btn.wide { grid-column: span 2; }
         
         .value-display { 
             background: var(--bg-secondary); 
@@ -122,14 +152,6 @@
         .category-btn .icon { font-size: 2rem; display: block; margin-bottom: 8px; }
         .category-btn .name { font-weight: 600; font-size: 0.9rem; }
         .category-btn.selected { border-color: var(--primary); background: rgba(99,102,241,0.2); }
-        .category-btn .delete-cat { 
-            position: absolute; top: 5px; right: 5px; 
-            background: var(--danger); color: white; 
-            border: none; width: 24px; height: 24px; 
-            border-radius: 50%; font-size: 0.8rem; 
-            cursor: pointer; display: none; 
-        }
-        .category-btn:hover .delete-cat { display: block; }
         
         .add-btn { 
             width: 100%; 
@@ -150,6 +172,10 @@
             background: linear-gradient(135deg, var(--info), #2563eb);
         }
         
+        .add-btn.warning {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+        }
+        
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; margin-bottom: 5px; font-size: 0.875rem; color: var(--text-secondary); }
         .input-group input, .input-group select {
@@ -158,8 +184,8 @@
             color: var(--text-primary); font-size: 1rem;
         }
         
-        .bank-list, .category-list { margin-top: 15px; }
-        .bank-item, .cat-item {
+        .bank-list, .category-list, .loan-list { margin-top: 15px; }
+        .bank-item, .cat-item, .loan-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px; background: var(--bg-secondary);
             border-radius: var(--radius-sm); margin-bottom: 8px;
@@ -168,16 +194,21 @@
         .bank-info { display: flex; align-items: center; gap: 10px; }
         .bank-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         
-        .installment-info {
+        .installment-box {
             background: rgba(245, 158, 11, 0.1);
             border: 1px solid var(--warning);
             border-radius: var(--radius-sm);
             padding: 15px;
             margin-bottom: 15px;
-            display: none;
         }
-        .installment-info.active { display: block; }
-        .installment-info h4 { color: var(--warning); margin-bottom: 10px; }
+        .installment-box h4 { color: var(--warning); margin-bottom: 10px; }
+        .installment-preview {
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
         
         .transaction-item { 
             background: var(--bg-card); 
@@ -187,7 +218,8 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 10px; 
+            margin-bottom: 10px;
+            position: relative;
         }
         .transaction-info { display: flex; align-items: center; flex: 1; }
         .transaction-amount { font-weight: 700; font-size: 1.2rem; }
@@ -201,6 +233,22 @@
             border-radius: 10px;
             margin-left: 5px;
         }
+        .edit-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--info);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: none;
+        }
+        .transaction-item:hover .edit-btn { display: block; }
         
         .filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .filter-btn { padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 0.875rem; font-weight: 500; }
@@ -258,31 +306,57 @@
         .type-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.1); }
         .type-btn.expense.active { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
         .type-btn.income.active { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.1); }
+        
+        .loan-type-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .loan-tab { flex: 1; padding: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; text-align: center; font-size: 0.9rem; }
+        .loan-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .progress-bar {
+            width: 100%; height: 8px; background: var(--bg-hover); border-radius: 4px; margin-top: 10px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s;
+        }
+        .progress-fill.warning { background: var(--warning); }
+        .progress-fill.danger { background: var(--danger); }
+        
+        .use-calc-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <header class="header">
             <div class="header-content">
-                <h1>💰 FinControl Pro</h1>
+                <h1>💰 FinControl Master</h1>
                 <button class="icon-btn" onclick="toggleTheme()">🌙</button>
             </div>
             <div class="balance-card">
-                <div style="font-size: 0.875rem; opacity: 0.9;">Saldo Total</div>
+                <div style="font-size: 0.875rem; opacity: 0.9;">Saldo Total em Contas</div>
                 <h2 id="total-balance">R$ 0,00</h2>
                 <div class="balance-trend">
                     <span id="income-total">Receitas: R$ 0,00</span>
                     <span id="expense-total">Despesas: R$ 0,00</span>
+                    <span id="pending-loans">Dívidas: R$ 0,00</span>
                 </div>
             </div>
         </header>
 
         <nav class="tab-nav">
             <button class="tab-btn active" onclick="showTab('dashboard')">Lançar</button>
+            <button class="tab-btn" onclick="showTab('calculator')">Calculadora</button>
             <button class="tab-btn" onclick="showTab('transactions')">Extrato</button>
             <button class="tab-btn" onclick="showTab('banks')">Bancos</button>
+            <button class="tab-btn" onclick="showTab('loans')">Dívidas</button>
             <button class="tab-btn" onclick="showTab('categories')">Categorias</button>
-            <button class="tab-btn" onclick="showTab('reports')">Relatórios</button>
         </nav>
 
         <main class="main-content">
@@ -300,6 +374,7 @@
                         <span class="currency">R$</span>
                         <span id="current-value" class="amount">0,00</span>
                     </div>
+                    <button class="use-calc-btn" onclick="useCalculatorResult()">📱 Usar resultado da calculadora</button>
                     
                     <div class="quick-values">
                         <button class="quick-value-btn" onclick="addValue(10)">+10</button>
@@ -340,14 +415,14 @@
                             <input type="checkbox" id="installment-toggle" onchange="toggleInstallments()">
                             <span class="slider"></span>
                         </label>
-                        <span>Parcelar compra</span>
+                        <span>Parcelar no cartão (valor integral por parcela)</span>
                     </div>
                     
-                    <div class="installment-info" id="installment-box">
+                    <div class="installment-box" id="installment-box" style="display: none;">
                         <h4>📅 Configurar Parcelas</h4>
                         <div class="input-group">
                             <label>Número de Parcelas</label>
-                            <select id="installment-count">
+                            <select id="installment-count" onchange="updateInstallmentPreview()">
                                 <option value="2">2x</option>
                                 <option value="3">3x</option>
                                 <option value="4">4x</option>
@@ -359,11 +434,17 @@
                                 <option value="10">10x</option>
                                 <option value="11">11x</option>
                                 <option value="12">12x</option>
+                                <option value="24">24x</option>
+                                <option value="36">36x</option>
+                                <option value="48">48x</option>
                             </select>
                         </div>
                         <div class="input-group">
                             <label>Primeiro pagamento</label>
-                            <input type="date" id="installment-date">
+                            <input type="date" id="installment-date" onchange="updateInstallmentPreview()">
+                        </div>
+                        <div class="installment-preview" id="installment-preview">
+                            Cada parcela será de R$ 0,00
                         </div>
                     </div>
                     
@@ -382,6 +463,53 @@
                 </div>
             </section>
 
+            <!-- ABA CALCULADORA -->
+            <section id="calculator" class="tab-content">
+                <div class="section-card">
+                    <h3>🧮 Calculadora Financeira</h3>
+                    
+                    <div class="calculator-display">
+                        <div class="expression" id="calc-expression"></div>
+                        <div class="result" id="calc-result">0</div>
+                    </div>
+                    
+                    <div class="calc-grid">
+                        <button class="calc-btn clear wide" onclick="clearCalc()">C</button>
+                        <button class="calc-btn clear" onclick="deleteLastCalc()">⌫</button>
+                        <button class="calc-btn operator" onclick="appendCalc('/')">÷</button>
+                        
+                        <button class="calc-btn" onclick="appendCalc('7')">7</button>
+                        <button class="calc-btn" onclick="appendCalc('8')">8</button>
+                        <button class="calc-btn" onclick="appendCalc('9')">9</button>
+                        <button class="calc-btn operator" onclick="appendCalc('*')">×</button>
+                        
+                        <button class="calc-btn" onclick="appendCalc('4')">4</button>
+                        <button class="calc-btn" onclick="appendCalc('5')">5</button>
+                        <button class="calc-btn" onclick="appendCalc('6')">6</button>
+                        <button class="calc-btn operator" onclick="appendCalc('-')">−</button>
+                        
+                        <button class="calc-btn" onclick="appendCalc('1')">1</button>
+                        <button class="calc-btn" onclick="appendCalc('2')">2</button>
+                        <button class="calc-btn" onclick="appendCalc('3')">3</button>
+                        <button class="calc-btn operator" onclick="appendCalc('+')">+</button>
+                        
+                        <button class="calc-btn wide" onclick="appendCalc('0')">0</button>
+                        <button class="calc-btn" onclick="appendCalc('.')">.</button>
+                        <button class="calc-btn equals" onclick="calculate()">=</button>
+                    </div>
+                    
+                    <div style="background: var(--bg-primary); padding: 15px; border-radius: var(--radius-sm); margin-top: 15px;">
+                        <h4 style="color: var(--text-secondary); margin-bottom: 10px;">💡 Dicas de uso</h4>
+                        <ul style="color: var(--text-muted); font-size: 0.9rem; padding-left: 20px;">
+                            <li>Use para calcular valores antes de lançar</li>
+                            <li>Clique em "Usar resultado" na aba Lançar</li>
+                            <li>Calcule parcelas: 900 ÷ 6 = 150</li>
+                            <li>Calcule juros: 1000 × 0.02 = 20</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
             <!-- ABA EXTRATO -->
             <section id="transactions" class="tab-content">
                 <div class="filters">
@@ -397,18 +525,106 @@
             <!-- ABA BANCOS -->
             <section id="banks" class="tab-content">
                 <div class="section-card">
-                    <h3>🏦 Meus Bancos</h3>
+                    <h3>🏦 Cadastrar Banco</h3>
                     <div class="input-group">
                         <label>Nome do Banco</label>
                         <input type="text" id="bank-name" placeholder="Ex: Nubank, Itaú, etc">
                     </div>
                     <div class="input-group">
-                        <label>Cor (opcional)</label>
+                        <label>Saldo Inicial</label>
+                        <input type="number" id="bank-balance" placeholder="0,00" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Cor</label>
                         <input type="color" id="bank-color" value="#6366f1" style="height: 50px;">
                     </div>
                     <button class="add-btn" onclick="addBank()">➕ Adicionar Banco</button>
-                    
+                </div>
+                
+                <div class="section-card">
+                    <h3>🏦 Meus Bancos</h3>
                     <div class="bank-list" id="bank-list"></div>
+                </div>
+            </section>
+
+            <!-- ABA DÍVIDAS (Empréstimos/Financiamentos) -->
+            <section id="loans" class="tab-content">
+                <div class="section-card">
+                    <h3>💳 Nova Dívida</h3>
+                    
+                    <div class="loan-type-tabs">
+                        <button class="loan-tab active" onclick="setLoanType('loan')">🏦 Empréstimo</button>
+                        <button class="loan-tab" onclick="setLoanType('financing')">🏠 Financiamento</button>
+                        <button class="loan-tab" onclick="setLoanType('card')">💳 Cartão</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Descrição</label>
+                        <input type="text" id="loan-desc" placeholder="Ex: Empréstimo Nubank, Financiamento Carro">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Valor Total</label>
+                        <input type="number" id="loan-total" placeholder="0,00" step="0.01">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Valor da Parcela</label>
+                        <input type="number" id="loan-installment" placeholder="0,00" step="0.01">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Número de Parcelas</label>
+                        <input type="number" id="loan-count" placeholder="12" min="1">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Parcelas Pagas</label>
+                        <input type="number" id="loan-paid" placeholder="0" min="0">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Taxa de Juros (% ao mês) - opcional</label>
+                        <input type="number" id="loan-rate" placeholder="0,00" step="0.01">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Data da Primeira Parcela</label>
+                        <input type="date" id="loan-date">
+                    </div>
+                    
+                    <button class="add-btn warning" onclick="addLoan()">➕ Adicionar Dívida</button>
+                </div>
+                
+                <div class="section-card">
+                    <h3>📊 Minhas Dívidas</h3>
+                    <div class="loan-list" id="loan-list"></div>
+                </div>
+                
+                <div class="section-card">
+                    <h3>📈 Resumo de Dívidas</h3>
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="summary-icon">💳</div>
+                            <div class="summary-label">Total em Dívidas</div>
+                            <div id="total-loans" class="summary-value">R$ 0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">✅</div>
+                            <div class="summary-label">Já Pago</div>
+                            <div id="paid-loans" class="summary-value">R$ 0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">⏳</div>
+                            <div class="summary-label">Restante</div>
+                            <div id="remaining-loans" class="summary-value">R$ 0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">📅</div>
+                            <div class="summary-label">Parcelas/Mês</div>
+                            <div id="monthly-installments" class="summary-value">R$ 0</div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -417,7 +633,7 @@
                 <div class="section-card">
                     <h3>🏷️ Categorias de Despesa</h3>
                     <div class="input-group">
-                        <label>Nome da Categoria</label>
+                        <label>Nome</label>
                         <input type="text" id="expense-cat-name" placeholder="Ex: Academia, Pets, etc">
                     </div>
                     <div class="input-group">
@@ -428,15 +644,14 @@
                         <label>Cor</label>
                         <input type="color" id="expense-cat-color" value="#ef4444" style="height: 50px;">
                     </div>
-                    <button class="add-btn" onclick="addCategory('expense')">➕ Adicionar Categoria de Despesa</button>
-                    
+                    <button class="add-btn" onclick="addCategory('expense')">➕ Adicionar Categoria</button>
                     <div class="category-list" id="expense-cat-list"></div>
                 </div>
                 
                 <div class="section-card">
                     <h3>💰 Categorias de Receita</h3>
                     <div class="input-group">
-                        <label>Nome da Categoria</label>
+                        <label>Nome</label>
                         <input type="text" id="income-cat-name" placeholder="Ex: Freelance, Aluguel, etc">
                     </div>
                     <div class="input-group">
@@ -447,52 +662,43 @@
                         <label>Cor</label>
                         <input type="color" id="income-cat-color" value="#10b981" style="height: 50px;">
                     </div>
-                    <button class="add-btn secondary" onclick="addCategory('income')">➕ Adicionar Categoria de Receita</button>
-                    
+                    <button class="add-btn secondary" onclick="addCategory('income')">➕ Adicionar Categoria</button>
                     <div class="category-list" id="income-cat-list"></div>
                 </div>
             </section>
-
-            <!-- ABA RELATÓRIOS -->
-            <section id="reports" class="tab-content">
-                <div class="chart-container">
-                    <h3>📊 Resumo do Período</h3>
-                    <div class="summary-grid">
-                        <div class="summary-card">
-                            <div class="summary-icon">💵</div>
-                            <div class="summary-label">Saldo</div>
-                            <div id="report-balance" class="summary-value">R$ 0</div>
-                        </div>
-                        <div class="summary-card">
-                            <div class="summary-icon">📈</div>
-                            <div class="summary-label">Média/Dia</div>
-                            <div id="report-average" class="summary-value">R$ 0</div>
-                        </div>
-                        <div class="summary-card">
-                            <div class="summary-icon">💸</div>
-                            <div class="summary-label">Maior Gasto</div>
-                            <div id="report-max" class="summary-value">R$ 0</div>
-                        </div>
-                        <div class="summary-card">
-                            <div class="summary-icon">🔄</div>
-                            <div class="summary-label">Transações</div>
-                            <div id="report-count" class="summary-value">0</div>
-                        </div>
-                    </div>
-                    <canvas id="expense-chart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>🏦 Gastos por Banco</h3>
-                    <canvas id="bank-chart"></canvas>
-                </div>
-                
-                <div class="section-card">
-                    <button onclick="exportData()" style="width: 100%; margin-bottom: 10px;" class="filter-btn">📥 Exportar Dados</button>
-                    <button onclick="clearAll()" style="width: 100%; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid var(--danger);" class="filter-btn">🗑️ Limpar Todos os Dados</button>
-                </div>
-            </section>
         </main>
+
+        <!-- MODAL DE EDIÇÃO -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>✏️ Editar Lançamento</h3>
+                    <button class="close-modal" onclick="closeEditModal()">×</button>
+                </div>
+                <div class="input-group">
+                    <label>Valor</label>
+                    <input type="number" id="edit-value" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label>Descrição</label>
+                    <input type="text" id="edit-desc">
+                </div>
+                <div class="input-group">
+                    <label>Data</label>
+                    <input type="date" id="edit-date">
+                </div>
+                <div class="input-group">
+                    <label>Categoria</label>
+                    <select id="edit-category"></select>
+                </div>
+                <div class="input-group">
+                    <label>Banco</label>
+                    <select id="edit-bank"></select>
+                </div>
+                <button class="add-btn" onclick="saveEdit()">💾 Salvar Alterações</button>
+                <button class="add-btn" style="background: var(--danger); margin-top: 10px;" onclick="deleteCurrentTransaction()">🗑️ Excluir</button>
+            </div>
+        </div>
 
         <div id="toast" class="toast"></div>
     </div>
@@ -519,25 +725,75 @@
         // Estado da aplicação
         let expenses = JSON.parse(localStorage.getItem('fincontrol_expenses') || '[]');
         let banks = JSON.parse(localStorage.getItem('fincontrol_banks') || '[]');
+        let loans = JSON.parse(localStorage.getItem('fincontrol_loans') || '[]');
         let categories = JSON.parse(localStorage.getItem('fincontrol_categories') || JSON.stringify(defaultCategories));
         let currentValue = 0;
         let selectedCategory = null;
         let transactionType = 'expense';
+        let loanType = 'loan';
         let chartInstance = null;
-        let bankChartInstance = null;
         let currentFilter = 'all';
+        let editingId = null;
+        let calcExpression = '';
+        let calcResult = 0;
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            // Define data padrão para parcelas
             document.getElementById('installment-date').valueAsDate = new Date();
+            document.getElementById('loan-date').valueAsDate = new Date();
             updateBankSelect();
             renderCategories();
             renderBanks();
+            renderLoans();
             updateDashboard();
         });
 
-        // Funções do Teclado Numérico
+        // ========== CALCULADORA ==========
+        function appendCalc(val) {
+            calcExpression += val;
+            document.getElementById('calc-expression').textContent = calcExpression;
+        }
+
+        function clearCalc() {
+            calcExpression = '';
+            calcResult = 0;
+            document.getElementById('calc-expression').textContent = '';
+            document.getElementById('calc-result').textContent = '0';
+        }
+
+        function deleteLastCalc() {
+            calcExpression = calcExpression.slice(0, -1);
+            document.getElementById('calc-expression').textContent = calcExpression;
+        }
+
+        function calculate() {
+            try {
+                // Substitui × e ÷ pelos operadores JS
+                let expr = calcExpression.replace(/×/g, '*').replace(/÷/g, '/');
+                calcResult = eval(expr);
+                document.getElementById('calc-result').textContent = calcResult.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                showToast('✅ Cálculo realizado! Vá para "Lançar" para usar o resultado');
+            } catch (e) {
+                showToast('❌ Expressão inválida');
+                calcResult = 0;
+            }
+        }
+
+        function useCalculatorResult() {
+            if (calcResult > 0) {
+                currentValue = calcResult;
+                updateDisplay();
+                showToast(`📱 Valor R$ ${calcResult.toFixed(2)} transferido!`);
+                showTab('dashboard');
+            } else {
+                showToast('Faça um cálculo primeiro na aba Calculadora');
+            }
+        }
+
+        // ========== TECLADO NUMÉRICO ==========
         function appendNumber(num) {
             if (currentValue === 0 && num === 0) return;
             let cents = Math.round(currentValue * 100);
@@ -550,12 +806,14 @@
             if (newValue < 100000) {
                 currentValue = newValue;
                 updateDisplay();
+                updateInstallmentPreview();
             }
         }
 
         function addValue(val) {
             currentValue += val;
             updateDisplay();
+            updateInstallmentPreview();
         }
 
         function deleteLast() {
@@ -563,11 +821,13 @@
             cents = Math.floor(cents / 10);
             currentValue = cents / 100;
             updateDisplay();
+            updateInstallmentPreview();
         }
 
         function clearValue() {
             currentValue = 0;
             updateDisplay();
+            updateInstallmentPreview();
         }
 
         function updateDisplay() {
@@ -578,7 +838,7 @@
             document.getElementById('add-btn').disabled = !selectedCategory || currentValue <= 0;
         }
 
-        // Tipos de Transação
+        // ========== TIPO DE TRANSAÇÃO ==========
         function setTransactionType(type) {
             transactionType = type;
             document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
@@ -588,7 +848,7 @@
             updateDisplay();
         }
 
-        // Categorias
+        // ========== CATEGORIAS ==========
         function renderCategories() {
             const grid = document.getElementById('category-grid');
             const cats = categories[transactionType] || {};
@@ -678,12 +938,14 @@
             `).join('');
         }
 
-        // Bancos
+        // ========== BANCOS ==========
         function addBank() {
             const nameInput = document.getElementById('bank-name');
+            const balanceInput = document.getElementById('bank-balance');
             const colorInput = document.getElementById('bank-color');
             
             const name = nameInput.value.trim();
+            const initialBalance = parseFloat(balanceInput.value) || 0;
             const color = colorInput.value;
             
             if (!name) {
@@ -694,16 +956,18 @@
             const bank = {
                 id: 'bank_' + Date.now(),
                 name,
-                color,
-                balance: 0
+                initialBalance,
+                color
             };
             
             banks.push(bank);
             localStorage.setItem('fincontrol_banks', JSON.stringify(banks));
             
             nameInput.value = '';
+            balanceInput.value = '';
             renderBanks();
             updateBankSelect();
+            updateDashboard();
             showToast('Banco adicionado!');
         }
 
@@ -713,6 +977,7 @@
                 localStorage.setItem('fincontrol_banks', JSON.stringify(banks));
                 renderBanks();
                 updateBankSelect();
+                updateDashboard();
                 showToast('Banco removido');
             }
         }
@@ -734,7 +999,7 @@
             });
             
             list.innerHTML = banks.map(bank => {
-                const balance = bankBalances[bank.id] || 0;
+                const currentBalance = bank.initialBalance + (bankBalances[bank.id] || 0);
                 return `
                     <div class="bank-item">
                         <div class="bank-info">
@@ -743,8 +1008,11 @@
                             </div>
                             <div>
                                 <div style="font-weight: 600;">${bank.name}</div>
-                                <div style="font-size: 0.875rem; color: ${balance >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                                    Saldo: R$ ${balance.toFixed(2)}
+                                <div style="font-size: 0.875rem; color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                                    Saldo: R$ ${currentBalance.toFixed(2)}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                    Inicial: R$ ${bank.initialBalance.toFixed(2)}
                                 </div>
                             </div>
                         </div>
@@ -756,30 +1024,55 @@
 
         function updateBankSelect() {
             const select = document.getElementById('bank-select');
-            select.innerHTML = '<option value="">Selecione um banco...</option>' +
+            const editSelect = document.getElementById('edit-bank');
+            const options = '<option value="">Selecione um banco...</option>' +
                 banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            select.innerHTML = options;
+            if (editSelect) editSelect.innerHTML = options;
         }
 
-        // Parcelas
+        // ========== PARCELAS (CORRIGIDO) ==========
         function toggleInstallments() {
             const box = document.getElementById('installment-box');
             const isChecked = document.getElementById('installment-toggle').checked;
-            box.classList.toggle('active', isChecked);
+            box.style.display = isChecked ? 'block' : 'none';
+            updateInstallmentPreview();
         }
 
-        // Adicionar Transação
+        function updateInstallmentPreview() {
+            const isChecked = document.getElementById('installment-toggle').checked;
+            const count = parseInt(document.getElementById('installment-count').value) || 1;
+            const preview = document.getElementById('installment-preview');
+            
+            if (isChecked && currentValue > 0) {
+                // Agora mostra o valor TOTAL por parcela, não dividido
+                const installmentValue = currentValue; // Valor integral da parcela
+                const total = installmentValue * count;
+                preview.innerHTML = `
+                    <strong>Valor de cada parcela:</strong> R$ ${installmentValue.toFixed(2)}<br>
+                    <strong>Total da compra:</strong> R$ ${total.toFixed(2)}<br>
+                    <small>Ex: TV de R$ ${total.toFixed(2)} em ${count}x de R$ ${installmentValue.toFixed(2)} sem juros</small>
+                `;
+            } else {
+                preview.textContent = 'Cada parcela será do valor total informado acima';
+            }
+        }
+
+        // ========== TRANSAÇÕES ==========
         function addTransaction() {
             if (!selectedCategory || currentValue <= 0) return;
             
             const desc = document.getElementById('transaction-desc').value.trim();
             const bankId = document.getElementById('bank-select').value;
             const isInstallment = document.getElementById('installment-toggle').checked;
+            const categoryName = categories[transactionType][selectedCategory]?.name || 'Desconhecido';
             
             if (isInstallment && transactionType === 'expense') {
-                // Cria parcelas
+                // Cria parcelas com VALOR INTEGRAL (não dividido!)
                 const count = parseInt(document.getElementById('installment-count').value);
                 const firstDate = document.getElementById('installment-date').value;
-                const installmentValue = currentValue / count;
+                const installmentValue = currentValue; // Valor da parcela (não divide!)
+                const totalValue = installmentValue * count; // Valor total da compra
                 
                 const groupId = 'inst_' + Date.now();
                 
@@ -789,24 +1082,25 @@
                     
                     const expense = {
                         id: Date.now() + i,
-                        value: installmentValue,
+                        value: installmentValue, // Valor integral da parcela
+                        totalValue: totalValue, // Valor total da compra
                         category: selectedCategory,
                         type: transactionType,
                         date: date.toISOString().split('T')[0],
                         timestamp: Date.now(),
-                        description: desc || categories[transactionType][selectedCategory].name,
+                        description: desc || `${categoryName} (${i+1}/${count})`,
                         bankId: bankId,
                         installment: {
                             groupId: groupId,
                             current: i + 1,
                             total: count,
-                            originalValue: currentValue
+                            isInstallment: true
                         }
                     };
                     expenses.push(expense);
                 }
                 
-                showToast(`✅ ${count}x de R$ ${installmentValue.toFixed(2)} adicionadas!`);
+                showToast(`✅ ${count}x de R$ ${installmentValue.toFixed(2)} = Total R$ ${totalValue.toFixed(2)}`);
             } else {
                 // Transação normal
                 const expense = {
@@ -816,7 +1110,7 @@
                     type: transactionType,
                     date: new Date().toISOString().split('T')[0],
                     timestamp: Date.now(),
-                    description: desc || categories[transactionType][selectedCategory].name,
+                    description: desc || categoryName,
                     bankId: bankId
                 };
                 expenses.push(expense);
@@ -834,27 +1128,271 @@
             document.getElementById('transaction-desc').value = '';
             document.getElementById('bank-select').value = '';
             document.getElementById('installment-toggle').checked = false;
-            document.getElementById('installment-box').classList.remove('active');
+            document.getElementById('installment-box').style.display = 'none';
             document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('selected'));
             updateDisplay();
             updateDashboard();
         }
 
-        // Dashboard e Listagens
+        // ========== EDIÇÃO DE LANÇAMENTOS ==========
+        function openEditModal(id) {
+            const expense = expenses.find(e => e.id === id);
+            if (!expense) return;
+            
+            editingId = id;
+            document.getElementById('edit-value').value = expense.value;
+            document.getElementById('edit-desc').value = expense.description || '';
+            document.getElementById('edit-date').value = expense.date;
+            
+            // Preenche categorias
+            const catSelect = document.getElementById('edit-category');
+            const cats = categories[expense.type] || {};
+            catSelect.innerHTML = Object.entries(cats).map(([id, cat]) => 
+                `<option value="${id}" ${id === expense.category ? 'selected' : ''}>${cat.icon} ${cat.name}</option>`
+            ).join('');
+            
+            // Preenche bancos
+            updateBankSelect();
+            document.getElementById('edit-bank').value = expense.bankId || '';
+            
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+            editingId = null;
+        }
+
+        function saveEdit() {
+            if (!editingId) return;
+            
+            const expense = expenses.find(e => e.id === editingId);
+            if (expense) {
+                expense.value = parseFloat(document.getElementById('edit-value').value) || 0;
+                expense.description = document.getElementById('edit-desc').value;
+                expense.date = document.getElementById('edit-date').value;
+                expense.category = document.getElementById('edit-category').value;
+                expense.bankId = document.getElementById('edit-bank').value;
+                
+                localStorage.setItem('fincontrol_expenses', JSON.stringify(expenses));
+                updateDashboard();
+                renderTransactions();
+                closeEditModal();
+                showToast('✅ Lançamento atualizado!');
+            }
+        }
+
+        function deleteCurrentTransaction() {
+            if (!editingId) return;
+            deleteExpense(editingId);
+            closeEditModal();
+        }
+
+        // ========== DÍVIDAS (Empréstimos/Financiamentos) ==========
+        function setLoanType(type) {
+            loanType = type;
+            document.querySelectorAll('.loan-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const desc = document.getElementById('loan-desc');
+            if (type === 'loan') desc.placeholder = 'Ex: Empréstimo Nubank';
+            else if (type === 'financing') desc.placeholder = 'Ex: Financiamento Carro';
+            else desc.placeholder = 'Ex: Parcelamento Cartão';
+        }
+
+        function addLoan() {
+            const desc = document.getElementById('loan-desc').value.trim();
+            const total = parseFloat(document.getElementById('loan-total').value) || 0;
+            const installment = parseFloat(document.getElementById('loan-installment').value) || 0;
+            const count = parseInt(document.getElementById('loan-count').value) || 1;
+            const paid = parseInt(document.getElementById('loan-paid').value) || 0;
+            const rate = parseFloat(document.getElementById('loan-rate').value) || 0;
+            const date = document.getElementById('loan-date').value;
+            
+            if (!desc || total <= 0 || installment <= 0) {
+                showToast('Preencha todos os campos obrigatórios');
+                return;
+            }
+            
+            const loan = {
+                id: 'loan_' + Date.now(),
+                type: loanType,
+                description: desc,
+                totalValue: total,
+                installmentValue: installment,
+                totalInstallments: count,
+                paidInstallments: paid,
+                interestRate: rate,
+                firstPaymentDate: date,
+                remainingValue: total - (installment * paid)
+            };
+            
+            loans.push(loan);
+            localStorage.setItem('fincontrol_loans', JSON.stringify(loans));
+            
+            // Limpa campos
+            document.getElementById('loan-desc').value = '';
+            document.getElementById('loan-total').value = '';
+            document.getElementById('loan-installment').value = '';
+            document.getElementById('loan-count').value = '';
+            document.getElementById('loan-paid').value = '';
+            document.getElementById('loan-rate').value = '';
+            
+            renderLoans();
+            updateDashboard();
+            showToast('Dívida registrada!');
+        }
+
+        function deleteLoan(id) {
+            if (confirm('Excluir este registro de dívida?')) {
+                loans = loans.filter(l => l.id !== id);
+                localStorage.setItem('fincontrol_loans', JSON.stringify(loans));
+                renderLoans();
+                updateDashboard();
+                showToast('Dívida removida');
+            }
+        }
+
+        function payLoanInstallment(id) {
+            const loan = loans.find(l => l.id === id);
+            if (!loan) return;
+            
+            if (loan.paidInstallments >= loan.totalInstallments) {
+                showToast('Todas as parcelas já foram pagas!');
+                return;
+            }
+            
+            loan.paidInstallments++;
+            loan.remainingValue -= loan.installmentValue;
+            localStorage.setItem('fincontrol_loans', JSON.stringify(loans));
+            
+            // Adiciona como despesa automaticamente
+            const expense = {
+                id: Date.now(),
+                value: loan.installmentValue,
+                category: 'housing',
+                type: 'expense',
+                date: new Date().toISOString().split('T')[0],
+                timestamp: Date.now(),
+                description: `Parcela ${loan.paidInstallments}/${loan.totalInstallments} - ${loan.description}`,
+                bankId: ''
+            };
+            expenses.push(expense);
+            localStorage.setItem('fincontrol_expenses', JSON.stringify(expenses));
+            
+            renderLoans();
+            updateDashboard();
+            showToast(`✅ Parcela ${loan.paidInstallments}/${loan.totalInstallments} paga!`);
+        }
+
+        function renderLoans() {
+            const list = document.getElementById('loan-list');
+            if (loans.length === 0) {
+                list.innerHTML = '<div class="empty-state">Nenhuma dívida registrada</div>';
+                updateLoanSummary();
+                return;
+            }
+            
+            list.innerHTML = loans.map(loan => {
+                const progress = (loan.paidInstallments / loan.totalInstallments) * 100;
+                const remaining = loan.totalInstallments - loan.paidInstallments;
+                const monthlyPayment = loan.installmentValue;
+                
+                let icon = '🏦';
+                if (loan.type === 'financing') icon = '🏠';
+                if (loan.type === 'card') icon = '💳';
+                
+                return `
+                    <div class="loan-item" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 2rem;">${icon}</span>
+                                <div>
+                                    <div style="font-weight: 600;">${loan.description}</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                        ${loan.paidInstallments} de ${loan.totalInstallments} parcelas pagas
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: var(--danger);">
+                                    R$ ${loan.remainingValue.toFixed(2)}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                    de R$ ${loan.totalValue.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill ${progress > 75 ? 'success' : progress > 50 ? 'warning' : 'danger'}" 
+                                 style="width: ${progress}%"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                Parcela: R$ ${monthlyPayment.toFixed(2)}/mês
+                                ${loan.interestRate > 0 ? `• ${loan.interestRate}% a.m.` : ''}
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="payLoanInstallment('${loan.id}')" 
+                                        style="background: var(--success); color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 0.875rem;">
+                                    Pagar Parcela
+                                </button>
+                                <button onclick="deleteLoan('${loan.id}')" 
+                                        style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.875rem;">
+                                    Excluir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateLoanSummary();
+        }
+
+        function updateLoanSummary() {
+            const totalDebt = loans.reduce((sum, l) => sum + l.remainingValue, 0);
+            const totalPaid = loans.reduce((sum, l) => sum + (l.installmentValue * l.paidInstallments), 0);
+            const totalOriginal = loans.reduce((sum, l) => sum + l.totalValue, 0);
+            const monthly = loans.reduce((sum, l) => sum + (l.remainingValue > 0 ? l.installmentValue : 0), 0);
+            
+            document.getElementById('total-loans').textContent = `R$ ${totalDebt.toFixed(0)}`;
+            document.getElementById('paid-loans').textContent = `R$ ${totalPaid.toFixed(0)}`;
+            document.getElementById('remaining-loans').textContent = `R$ ${(totalOriginal - totalPaid).toFixed(0)}`;
+            document.getElementById('monthly-installments').textContent = `R$ ${monthly.toFixed(0)}`;
+        }
+
+        // ========== DASHBOARD E LISTAGENS ==========
         function updateDashboard() {
             const now = new Date();
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
             
-            // Calcula totais
+            // Calcula totais do mês
             const monthTransactions = expenses.filter(e => new Date(e.date) >= monthStart);
             const income = monthTransactions.filter(e => e.type === 'income').reduce((sum, e) => sum + e.value, 0);
             const expense = monthTransactions.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
-            const balance = income - expense;
             
-            document.getElementById('total-balance').textContent = `R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('total-balance').style.color = balance >= 0 ? 'white' : 'var(--danger)';
+            // Calcula saldo dos bancos (inicial + transações)
+            const bankBalances = {};
+            expenses.forEach(e => {
+                if (e.bankId) {
+                    if (!bankBalances[e.bankId]) bankBalances[e.bankId] = 0;
+                    bankBalances[e.bankId] += e.type === 'income' ? e.value : -e.value;
+                }
+            });
+            
+            const totalBankBalance = banks.reduce((sum, b) => sum + b.initialBalance + (bankBalances[b.id] || 0), 0);
+            
+            // Dívidas pendentes
+            const pendingLoans = loans.reduce((sum, l) => sum + l.remainingValue, 0);
+            
+            document.getElementById('total-balance').textContent = `R$ ${totalBankBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-balance').style.color = totalBankBalance >= 0 ? 'white' : 'var(--danger)';
             document.getElementById('income-total').textContent = `Receitas: R$ ${income.toFixed(2)}`;
             document.getElementById('expense-total').textContent = `Despesas: R$ ${expense.toFixed(2)}`;
+            document.getElementById('pending-loans').textContent = `Dívidas: R$ ${pendingLoans.toFixed(2)}`;
             
             // Últimos lançamentos
             const recent = expenses.slice(0, 5);
@@ -864,91 +1402,36 @@
             } else {
                 container.innerHTML = recent.map(e => createItemHTML(e)).join('');
             }
-            
-            updateCharts(monthTransactions);
         }
 
         function createItemHTML(e) {
             const cat = categories[e.type]?.[e.category] || categories.expense[e.category] || { name: 'Desconhecido', icon: '📦', color: '#666' };
             const isInstallment = e.installment;
             const installmentBadge = isInstallment ? `<span class="installment-badge">${e.installment.current}/${e.installment.total}</span>` : '';
+            const bankName = e.bankId ? (banks.find(b => b.id === e.bankId)?.name || 'Banco') : '';
             
             return `
-                <div class="transaction-item" onclick="deleteExpense(${e.id})">
+                <div class="transaction-item">
                     <div class="transaction-info">
                         <div style="font-size: 1.5rem; margin-right: 12px;">${cat.icon}</div>
                         <div>
                             <div style="font-weight: 600;">${e.description || cat.name} ${installmentBadge}</div>
                             <div style="font-size: 0.8rem; color: var(--text-muted);">
                                 ${new Date(e.date).toLocaleDateString('pt-BR')}
-                                ${e.bankId ? ' • ' + (banks.find(b => b.id === e.bankId)?.name || 'Banco') : ''}
+                                ${bankName ? ' • ' + bankName : ''}
+                                ${e.totalValue ? ` • Total: R$${e.totalValue.toFixed(2)}` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="transaction-amount ${e.type}">
                         ${e.type === 'income' ? '+' : '-'}R$ ${e.value.toFixed(2)}
                     </div>
+                    <button class="edit-btn" onclick="openEditModal(${e.id})">✏️</button>
                 </div>
             `;
         }
 
-        function updateCharts(monthTransactions) {
-            // Gráfico de categorias
-            const ctx = document.getElementById('expense-chart')?.getContext('2d');
-            if (!ctx) return;
-            
-            const byCat = {};
-            monthTransactions.filter(e => e.type === 'expense').forEach(e => {
-                byCat[e.category] = (byCat[e.category] || 0) + e.value;
-            });
-            
-            if (chartInstance) chartInstance.destroy();
-            
-            const labels = Object.keys(byCat).map(id => categories.expense[id]?.name || 'Outros');
-            const data = Object.values(byCat);
-            const colors = Object.keys(byCat).map(id => categories.expense[id]?.color || '#666');
-            
-            if (data.length > 0) {
-                chartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
-                });
-            }
-            
-            // Gráfico por banco
-            const bankCtx = document.getElementById('bank-chart')?.getContext('2d');
-            if (!bankCtx) return;
-            
-            const byBank = {};
-            monthTransactions.filter(e => e.type === 'expense' && e.bankId).forEach(e => {
-                byBank[e.bankId] = (byBank[e.bankId] || 0) + e.value;
-            });
-            
-            if (bankChartInstance) bankChartInstance.destroy();
-            
-            const bankLabels = Object.keys(byBank).map(id => banks.find(b => b.id === id)?.name || 'Desconhecido');
-            const bankData = Object.values(byBank);
-            const bankColors = Object.keys(byBank).map(id => banks.find(b => b.id === id)?.color || '#666');
-            
-            if (bankData.length > 0) {
-                bankChartInstance = new Chart(bankCtx, {
-                    type: 'bar',
-                    data: { 
-                        labels: bankLabels, 
-                        datasets: [{ 
-                            label: 'Gastos', 
-                            data: bankData, 
-                            backgroundColor: bankColors,
-                            borderRadius: 5
-                        }] 
-                    },
-                    options: { responsive: true, plugins: { legend: { display: false } } }
-                });
-            }
-        }
-
-        // Navegação
+        // ========== NAVEGAÇÃO E FILTROS ==========
         function showTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -958,7 +1441,7 @@
             if (tab === 'transactions') renderTransactions();
             if (tab === 'banks') renderBanks();
             if (tab === 'categories') renderCategoryLists();
-            if (tab === 'reports') updateReports();
+            if (tab === 'loans') renderLoans();
         }
 
         function setFilter(filter) {
@@ -1008,47 +1491,7 @@
             }
         }
 
-        function updateReports() {
-            const total = expenses.reduce((sum, e) => sum + (e.type === 'income' ? e.value : -e.value), 0);
-            const expenseTotal = expenses.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
-            const maxExpense = Math.max(...expenses.filter(e => e.type === 'expense').map(e => e.value), 0);
-            
-            document.getElementById('report-balance').textContent = `R$ ${total.toFixed(0)}`;
-            document.getElementById('report-balance').style.color = total >= 0 ? 'var(--success)' : 'var(--danger)';
-            document.getElementById('report-average').textContent = `R$ ${expenses.length > 0 ? (expenseTotal / 30).toFixed(0) : 0}`;
-            document.getElementById('report-max').textContent = `R$ ${maxExpense.toFixed(0)}`;
-            document.getElementById('report-count').textContent = expenses.length;
-        }
-
-        function exportData() {
-            const data = { expenses, banks, categories, date: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fincontrol-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            showToast('Backup exportado!');
-        }
-
-        function clearAll() {
-            if (confirm('⚠️ Apagar TODOS os dados?')) {
-                if (confirm('Tem certeza? Esta ação não pode ser desfeita!')) {
-                    expenses = [];
-                    banks = [];
-                    categories = JSON.parse(JSON.stringify(defaultCategories));
-                    localStorage.removeItem('fincontrol_expenses');
-                    localStorage.removeItem('fincontrol_banks');
-                    localStorage.removeItem('fincontrol_categories');
-                    updateDashboard();
-                    renderBanks();
-                    renderCategories();
-                    renderCategoryLists();
-                    showToast('Todos os dados foram apagados');
-                }
-            }
-        }
-
+        // ========== UTILITÁRIOS ==========
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
             const next = current === 'dark' ? 'light' : 'dark';
@@ -1061,6 +1504,14 @@
             toast.textContent = msg;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Fecha modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('edit-modal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
         }
     </script>
 </body>
