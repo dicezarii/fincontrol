@@ -319,6 +319,12 @@
             border-color: var(--primary);
         }
         
+        /* Campo com erro */
+        .input-field.error {
+            border-color: var(--danger);
+            background: rgba(239,68,68,0.05);
+        }
+        
         .amount-display {
             font-size: 3rem;
             font-weight: 700;
@@ -807,22 +813,22 @@
         </div>
         <div class="sheet-content">
             <div class="input-group">
-                <label class="input-label">Descrição</label>
-                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Carro">
+                <label class="input-label">Descrição *</label>
+                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Financiamento Carro">
             </div>
             <div class="input-group">
-                <label class="input-label">Valor (R$)</label>
-                <input type="text" inputmode="decimal" class="input-field" id="loan-value" placeholder="92.267,78">
-                <div class="hint">Use ponto para milhar e vírgula para centavos (ex: 92.267,78)</div>
+                <label class="input-label">Valor (R$) *</label>
+                <input type="text" inputmode="decimal" class="input-field" id="loan-value" placeholder="92267,78">
+                <div class="hint">Digite o valor com vírgula ou ponto</div>
             </div>
             <div class="input-group">
-                <label class="input-label">Taxa Mensal (%)</label>
+                <label class="input-label">Taxa Mensal (%) *</label>
                 <input type="text" inputmode="decimal" class="input-field" id="loan-rate" placeholder="1,3">
                 <div class="hint">Ex: 1,3 para 1,3% ao mês</div>
             </div>
             <div class="input-group">
-                <label class="input-label">Parcelas</label>
-                <input type="number" class="input-field" id="loan-months" placeholder="48" min="1">
+                <label class="input-label">Parcelas *</label>
+                <input type="number" class="input-field" id="loan-months" placeholder="120" min="1">
             </div>
             <div class="input-group">
                 <label class="input-label">Sistema</label>
@@ -832,10 +838,10 @@
                 </div>
             </div>
             <div class="input-group">
-                <label class="input-label">Primeira Parcela</label>
+                <label class="input-label">Primeira Parcela *</label>
                 <input type="date" class="input-field" id="loan-start-date">
             </div>
-            <button class="btn-primary" onclick="saveLoan()">Salvar</button>
+            <button class="btn-primary" onclick="saveLoan()">Salvar Empréstimo</button>
         </div>
     </div>
     
@@ -861,7 +867,7 @@
             </div>
             <div class="input-group">
                 <label class="input-label">Saldo Inicial (R$)</label>
-                <input type="text" inputmode="decimal" class="input-field" id="bank-initial" placeholder="1.000,00">
+                <input type="text" inputmode="decimal" class="input-field" id="bank-initial" placeholder="1000,00">
             </div>
             <div class="input-group">
                 <label class="input-label">Cor</label>
@@ -936,28 +942,37 @@
         let calcExpr = '', currentAmortization = 'price', selectedLoanIndex = null;
         let currentEditingBank = null, currentCatType = 'expense';
 
-        // Função melhorada para converter valores monetários brasileiros
+        // Função simplificada para converter valores brasileiros
         function parseNumber(value) {
             if (!value || value === '') return 0;
             
-            // Converte para string
+            // Converte para string e remove espaços
             let str = value.toString().trim();
             
-            // Se tem vírgula e tem ponto, assume que vírgula é decimal
-            // Ex: 1.234,56 -> remove pontos -> 1234,56 -> troca vírgula -> 1234.56
-            if (str.includes(',') && str.includes('.')) {
+            // Remove pontos de milhar (se houver mais de um ponto ou se o ponto está antes da vírgula)
+            // Primeiro, verifica se tem vírgula (separador decimal brasileiro)
+            if (str.includes(',')) {
+                // Se tem vírgula, o ponto é separador de milhar - remove todos os pontos
+                // e substitui a vírgula por ponto para conversão
                 str = str.replace(/\./g, '').replace(',', '.');
             }
-            // Se tem apenas vírgula, assume que é decimal
-            // Ex: 1234,56 -> troca vírgula -> 1234.56
-            else if (str.includes(',')) {
-                str = str.replace(',', '.');
+            // Se não tem vírgula mas tem ponto, pode ser:
+            // 1.123,45 -> já tratado acima
+            // 1234.56 -> decimal com ponto (inglês)
+            // 1.234 -> milhar sem decimal
+            // Vamos assumir que se tem 3 dígitos após o último ponto, é milhar
+            else if (str.includes('.')) {
+                const parts = str.split('.');
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length === 3 && parts.length > 1) {
+                    // Provavelmente milhar (ex: 1.234)
+                    str = str.replace(/\./g, '');
+                }
+                // Senão, mantém como está (decimal com ponto)
             }
-            // Se tem apenas ponto, pode ser milhar (1.234) ou decimal (1.5)
-            // Vamos assumir que se tiver mais de um ponto, é milhar
-            // Se tiver apenas um ponto e 3 dígitos depois, é ambíguo, mas assumiremos decimal
             
-            return parseFloat(str) || 0;
+            const result = parseFloat(str);
+            return isNaN(result) ? 0 : result;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1113,24 +1128,74 @@
         }
         
         function saveLoan() {
-            const desc = document.getElementById('loan-desc').value;
-            const valorInput = document.getElementById('loan-value').value;
-            const taxaInput = document.getElementById('loan-rate').value;
+            const desc = document.getElementById('loan-desc').value.trim();
+            const valorInput = document.getElementById('loan-value').value.trim();
+            const taxaInput = document.getElementById('loan-rate').value.trim();
+            const parcelasInput = document.getElementById('loan-months').value.trim();
+            const startDate = document.getElementById('loan-start-date').value;
+            
+            // Remove classes de erro anteriores
+            document.getElementById('loan-desc').classList.remove('error');
+            document.getElementById('loan-value').classList.remove('error');
+            document.getElementById('loan-rate').classList.remove('error');
+            document.getElementById('loan-months').classList.remove('error');
+            document.getElementById('loan-start-date').classList.remove('error');
+            
+            let hasError = false;
+            
+            if (!desc) {
+                document.getElementById('loan-desc').classList.add('error');
+                hasError = true;
+            }
+            
+            if (!valorInput) {
+                document.getElementById('loan-value').classList.add('error');
+                hasError = true;
+            }
+            
+            if (!taxaInput) {
+                document.getElementById('loan-rate').classList.add('error');
+                hasError = true;
+            }
+            
+            if (!parcelasInput || parseInt(parcelasInput) <= 0) {
+                document.getElementById('loan-months').classList.add('error');
+                hasError = true;
+            }
+            
+            if (!startDate) {
+                document.getElementById('loan-start-date').classList.add('error');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                showToast('⚠️ Preencha todos os campos obrigatórios');
+                return;
+            }
             
             const valor = parseNumber(valorInput);
             const taxa = parseNumber(taxaInput);
-            const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
-            const startDate = document.getElementById('loan-start-date').value;
+            const parcelas = parseInt(parcelasInput);
             
-            if (!desc || valor <= 0 || parcelas <= 0) { 
-                showToast('Preencha todos os campos corretamente'); 
-                return; 
+            if (valor <= 0) {
+                document.getElementById('loan-value').classList.add('error');
+                showToast('⚠️ Valor inválido');
+                return;
+            }
+            
+            if (taxa < 0) {
+                document.getElementById('loan-rate').classList.add('error');
+                showToast('⚠️ Taxa inválida');
+                return;
             }
             
             const calc = currentAmortization === 'price' ? calculatePrice(valor, taxa, parcelas) : calculateSAC(valor, taxa, parcelas);
             loans.push({ id: Date.now(), desc, valor, taxa, parcelas, amortization: currentAmortization, startDate, parcelaAtual: 1, parcelasPagas: 0, saldoDevedor: valor, totalJuros: calc.totalJuros, schedule: calc.schedule });
             localStorage.setItem('fc_loans', JSON.stringify(loans));
-            showToast('💳 Salvo!'); closeAllSheets(); updateUI(); viewLoanDetail(loans.length - 1);
+            showToast('💳 Empréstimo salvo!'); 
+            closeAllSheets(); 
+            updateUI(); 
+            viewLoanDetail(loans.length - 1);
         }
         
         function viewLoanDetail(index) {
@@ -1263,7 +1328,6 @@
             const bank = banks[index];
             document.getElementById('bank-sheet-title').textContent = 'Editar Banco';
             document.getElementById('bank-name').value = bank.name;
-            // Formata o valor para exibição brasileira
             const initialFormatted = bank.initial ? bank.initial.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
             document.getElementById('bank-initial').value = initialFormatted;
             document.getElementById('bank-color').value = bank.color || '#6366f1';
