@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0a0a0f">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>FinControl</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -591,6 +589,12 @@
             font-size: 0.75rem;
             color: var(--text-muted);
         }
+        
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -808,11 +812,13 @@
             </div>
             <div class="input-group">
                 <label class="input-label">Valor (R$)</label>
-                <input type="text" inputmode="decimal" class="input-field" id="loan-value" placeholder="50000,00" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
+                <input type="text" inputmode="decimal" class="input-field" id="loan-value" placeholder="92.267,78">
+                <div class="hint">Use ponto para milhar e vírgula para centavos (ex: 92.267,78)</div>
             </div>
             <div class="input-group">
                 <label class="input-label">Taxa Mensal (%)</label>
-                <input type="text" inputmode="decimal" class="input-field" id="loan-rate" placeholder="1,3" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
+                <input type="text" inputmode="decimal" class="input-field" id="loan-rate" placeholder="1,3">
+                <div class="hint">Ex: 1,3 para 1,3% ao mês</div>
             </div>
             <div class="input-group">
                 <label class="input-label">Parcelas</label>
@@ -854,8 +860,8 @@
                 <input type="text" class="input-field" id="bank-name" placeholder="Ex: Nubank">
             </div>
             <div class="input-group">
-                <label class="input-label">Saldo Inicial</label>
-                <input type="text" inputmode="decimal" class="input-field" id="bank-initial" placeholder="0,00" oninput="this.value = this.value.replace(/[^0-9,]/g, '').replace(/(,.*),/g, '$1')">
+                <label class="input-label">Saldo Inicial (R$)</label>
+                <input type="text" inputmode="decimal" class="input-field" id="bank-initial" placeholder="1.000,00">
             </div>
             <div class="input-group">
                 <label class="input-label">Cor</label>
@@ -930,10 +936,28 @@
         let calcExpr = '', currentAmortization = 'price', selectedLoanIndex = null;
         let currentEditingBank = null, currentCatType = 'expense';
 
-        // Função auxiliar para converter string com vírgula para número
+        // Função melhorada para converter valores monetários brasileiros
         function parseNumber(value) {
-            if (!value) return 0;
-            return parseFloat(value.toString().replace(/\./g, '').replace(',', '.')) || 0;
+            if (!value || value === '') return 0;
+            
+            // Converte para string
+            let str = value.toString().trim();
+            
+            // Se tem vírgula e tem ponto, assume que vírgula é decimal
+            // Ex: 1.234,56 -> remove pontos -> 1234,56 -> troca vírgula -> 1234.56
+            if (str.includes(',') && str.includes('.')) {
+                str = str.replace(/\./g, '').replace(',', '.');
+            }
+            // Se tem apenas vírgula, assume que é decimal
+            // Ex: 1234,56 -> troca vírgula -> 1234.56
+            else if (str.includes(',')) {
+                str = str.replace(',', '.');
+            }
+            // Se tem apenas ponto, pode ser milhar (1.234) ou decimal (1.5)
+            // Vamos assumir que se tiver mais de um ponto, é milhar
+            // Se tiver apenas um ponto e 3 dígitos depois, é ambíguo, mas assumiremos decimal
+            
+            return parseFloat(str) || 0;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1090,12 +1114,18 @@
         
         function saveLoan() {
             const desc = document.getElementById('loan-desc').value;
-            const valor = parseNumber(document.getElementById('loan-value').value);
-            const taxa = parseNumber(document.getElementById('loan-rate').value);
+            const valorInput = document.getElementById('loan-value').value;
+            const taxaInput = document.getElementById('loan-rate').value;
+            
+            const valor = parseNumber(valorInput);
+            const taxa = parseNumber(taxaInput);
             const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
             const startDate = document.getElementById('loan-start-date').value;
             
-            if (!desc || valor <= 0 || parcelas <= 0) { showToast('Preencha todos os campos'); return; }
+            if (!desc || valor <= 0 || parcelas <= 0) { 
+                showToast('Preencha todos os campos corretamente'); 
+                return; 
+            }
             
             const calc = currentAmortization === 'price' ? calculatePrice(valor, taxa, parcelas) : calculateSAC(valor, taxa, parcelas);
             loans.push({ id: Date.now(), desc, valor, taxa, parcelas, amortization: currentAmortization, startDate, parcelaAtual: 1, parcelasPagas: 0, saldoDevedor: valor, totalJuros: calc.totalJuros, schedule: calc.schedule });
@@ -1116,19 +1146,19 @@
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
                         <div style="font-size: 0.75rem; color: var(--text-muted);">Valor</div>
-                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.valor.toFixed(2)}</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
                         <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa</div>
-                        <div style="font-size: 1.1rem; font-weight: 700;">${loan.taxa}%</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">${loan.taxa}% a.m.</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
                         <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total</div>
-                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toFixed(2)}</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Saldo</div>
-                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.saldoDevedor.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Saldo Devedor</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.saldoDevedor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                 </div>
                 <div style="margin-bottom: 20px;">
@@ -1144,7 +1174,7 @@
                 html += `
                     <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
                         <div style="font-size: 0.875rem; color: var(--text-muted);">Próxima (#${nextParcel.parcela})</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin: 4px 0;">R$ ${nextParcel.valor.toFixed(2)}</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin: 4px 0;">R$ ${nextParcel.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted);">Juros: R$ ${nextParcel.juros.toFixed(2)} | Amort: R$ ${nextParcel.amortizacao.toFixed(2)}</div>
                     </div>
                     <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">💸 Pagar Parcela ${nextParcel.parcela}</button>`;
@@ -1208,7 +1238,7 @@
                         <div style="width: 40px; height: 40px; background: ${bank.color || '#6366f1'}20; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">🏦</div>
                         <div class="bank-info"><h4>${bank.name}</h4><small>${bankTx.length} transações</small></div>
                     </div>
-                    <div class="bank-balance"><div class="amount" style="color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">R$ ${currentBalance.toFixed(2)}</div><div class="initial">Inicial: R$ ${(bank.initial || 0).toFixed(2)}</div></div>
+                    <div class="bank-balance"><div class="amount" style="color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">R$ ${currentBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="initial">Inicial: R$ ${(bank.initial || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div></div>
                 </div>`;
             }).join('');
         }
@@ -1233,7 +1263,9 @@
             const bank = banks[index];
             document.getElementById('bank-sheet-title').textContent = 'Editar Banco';
             document.getElementById('bank-name').value = bank.name;
-            document.getElementById('bank-initial').value = bank.initial ? bank.initial.toString().replace('.', ',') : '0';
+            // Formata o valor para exibição brasileira
+            const initialFormatted = bank.initial ? bank.initial.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '';
+            document.getElementById('bank-initial').value = initialFormatted;
             document.getElementById('bank-color').value = bank.color || '#6366f1';
             document.getElementById('btn-delete-bank').style.display = 'block';
             openSheet('bank-sheet');
@@ -1318,10 +1350,10 @@
                 return s + (b.initial || 0) + bankTx.filter(e => e.type === 'income').reduce((sum, e) => sum + e.value, 0) - bankTx.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
             }, 0);
             
-            document.getElementById('total-balance').textContent = `R$ ${bankBalance.toFixed(2)}`;
-            document.getElementById('income-badge').textContent = `↑ R$ ${income.toFixed(2)}`;
-            document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toFixed(2)}`;
-            document.getElementById('loan-badge').textContent = `💳 R$ ${loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0).toFixed(2)}`;
+            document.getElementById('total-balance').textContent = `R$ ${bankBalance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('income-badge').textContent = `↑ R$ ${income.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('loan-badge').textContent = `💳 R$ ${loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             
             const bankSelect = document.getElementById('tx-bank');
             if (bankSelect) bankSelect.innerHTML = '<option value="">Selecione...</option>' + banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
@@ -1331,10 +1363,10 @@
                 <div class="loan-card" onclick="viewLoanDetail(${index})">
                     <div class="loan-header">
                         <div><div class="loan-title">${l.desc}</div><div style="font-size: 0.8rem; color: var(--text-muted);">${l.amortization.toUpperCase()} | ${l.parcelas}x</div></div>
-                        <div class="loan-amount">R$ ${l.saldoDevedor.toFixed(0)}</div>
+                        <div class="loan-amount">R$ ${l.saldoDevedor.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</div>
                     </div>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div></div>
-                    <div class="loan-stats"><span>${l.parcelasPagas || 0} de ${l.parcelas}</span><span>Próx: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toFixed(2)}</span></div>
+                    <div class="loan-stats"><span>${l.parcelasPagas || 0} de ${l.parcelas}</span><span>Próx: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
                 </div>`).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo</div>';
         }
         
@@ -1345,7 +1377,7 @@
             <div class="transaction-item" onclick="if(confirm('Excluir?')) deleteTransaction(${e.id})">
                 <div class="tx-icon">${cat.split(' ')[0]}</div>
                 <div class="tx-info"><div class="tx-title">${e.desc || cat}</div><div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div></div>
-                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}</div>
+                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}R$ ${e.value.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
             </div>`;
         }
         
