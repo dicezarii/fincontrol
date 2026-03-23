@@ -319,7 +319,6 @@
             border-color: var(--primary);
         }
         
-        /* Campo com erro */
         .input-field.error {
             border-color: var(--danger);
             background: rgba(239,68,68,0.05);
@@ -629,7 +628,6 @@
             color: var(--text-secondary);
         }
 
-        /* Novos estilos para amortização */
         .amortization-box {
             background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(16,185,129,0.1) 100%);
             border: 1px solid rgba(245,158,11,0.3);
@@ -691,11 +689,12 @@
         .savings-highlight {
             background: rgba(16,185,129,0.2);
             color: var(--success);
-            padding: 8px;
-            border-radius: 6px;
-            margin-top: 8px;
-            font-size: 0.9rem;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 1rem;
             text-align: center;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -927,7 +926,6 @@
                 <input type="number" class="input-field" id="loan-months" placeholder="120" min="1">
             </div>
             
-            <!-- Campo para valor da parcela personalizado -->
             <div class="input-group">
                 <label class="input-label">Valor da Parcela (R$) <span style="color: var(--text-muted); font-size: 0.8rem;">- Opcional</span></label>
                 <input type="text" inputmode="decimal" class="input-field" id="loan-parcela-value" placeholder="1522,69">
@@ -1047,7 +1045,6 @@
         let calcExpr = '', currentAmortization = 'price', selectedLoanIndex = null;
         let currentEditingBank = null, currentCatType = 'expense';
 
-        // Função simplificada para converter valores brasileiros
         function parseNumber(value) {
             if (!value || value === '') return 0;
             let str = value.toString().trim();
@@ -1064,7 +1061,6 @@
             return isNaN(result) ? 0 : result;
         }
 
-        // Calcular diferença de meses entre duas datas
         function getMonthsDifference(startDate, endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
@@ -1076,12 +1072,11 @@
             return Math.max(0, months);
         }
 
-        // NOVO: Calcular valor presente (desconto) segundo Resolução 3516 Bacen
+        // FUNÇÃO CORRIGIDA: Calcular valor presente
         function calcularValorPresente(valorFuturo, taxaMensal, mesesParaFrente) {
-            // Fórmula do valor presente: VP = VF / (1 + i)^n
             const taxaDecimal = taxaMensal / 100;
             const denominador = Math.pow(1 + taxaDecimal, mesesParaFrente);
-            return valorFuturo / denominator;
+            return valorFuturo / denominador;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1338,11 +1333,15 @@
             viewLoanDetail(loans.length - 1);
         }
         
-        // CORREÇÃO PROFISSIONAL: Calcular amortização com DESCONTO (valor presente)
+        // FUNÇÃO CORRIGIDA: Calcular amortização das últimas parcelas com desconto
         function calcularAmortizacao(index) {
+            console.log('Calculando amortização para índice:', index);
+            
             const loan = loans[index];
             const qtdInput = document.getElementById('amort-qtd');
             const qtd = parseInt(qtdInput.value);
+            
+            console.log('Quantidade digitada:', qtd);
             
             if (!qtd || qtd <= 0) {
                 showToast('Digite uma quantidade válida');
@@ -1350,58 +1349,73 @@
             }
             
             const parcelasRestantes = loan.parcelas - loan.parcelasPagas;
+            console.log('Parcelas restantes:', parcelasRestantes);
+            
             if (qtd > parcelasRestantes) {
                 showToast(`Máximo disponível: ${parcelasRestantes} parcelas`);
                 qtdInput.value = parcelasRestantes;
                 return;
             }
             
-            // Pegar as ÚLTIMAS parcelas (as mais distantes)
+            // Pegar as últimas parcelas (do final do contrato)
             const parcelasAmortizar = [];
-            const indicesAmortizar = [];
             
             for (let i = 0; i < qtd; i++) {
-                const indiceNoSchedule = loan.parcelas - 1 - i; // Do final para o início
+                const indiceNoSchedule = loan.parcelas - 1 - i; // Começa do final
+                console.log(`Índice ${i}:`, indiceNoSchedule);
+                
                 if (indiceNoSchedule >= loan.parcelasPagas && indiceNoSchedule < loan.schedule.length) {
                     const p = loan.schedule[indiceNoSchedule];
-                    // Calcular quantos meses no futuro está esta parcela
                     const mesesNoFuturo = indiceNoSchedule - loan.parcelasPagas + 1;
+                    
+                    console.log(`Parcela ${p.parcela}, valor: ${p.valor}, meses no futuro: ${mesesNoFuturo}`);
+                    
+                    // Calcular valor presente com desconto
+                    const valorPresente = calcularValorPresente(p.valor, loan.taxa, mesesNoFuturo);
+                    
                     parcelasAmortizar.push({
                         num: p.parcela,
                         valorNominal: p.valor,
+                        valorPresente: valorPresente,
                         mesesFuturo: mesesNoFuturo,
                         indice: indiceNoSchedule
                     });
-                    indicesAmortizar.push(indiceNoSchedule);
                 }
             }
             
-            // Ordenar para exibição (crescente)
-            parcelasAmortizar.sort((a, b) => a.num - b.num);
+            console.log('Parcelas a amortizar:', parcelasAmortizar);
             
-            // CORREÇÃO: Calcular valor presente com DESCONTO segundo Bacen
-            // Usar taxa de juros do contrato para desconto (Resolução 3516)
+            if (parcelasAmortizar.length === 0) {
+                showToast('Não foi possível calcular as parcelas');
+                return;
+            }
+            
+            // Calcular totais
             let valorPresenteTotal = 0;
             let valorNominalTotal = 0;
             
             parcelasAmortizar.forEach(p => {
-                const vp = calcularValorPresente(p.valorNominal, loan.taxa, p.mesesFuturo);
-                valorPresenteTotal += vp;
+                valorPresenteTotal += p.valorPresente;
                 valorNominalTotal += p.valorNominal;
             });
             
-            // Desconto obtido
             const desconto = valorNominalTotal - valorPresenteTotal;
             
-            // Novo saldo devedor = saldo atual - valor presente das parcelas amortizadas
-            const novoSaldo = Math.max(0, loan.saldoDevedor - valorPresenteTotal);
+            // Novo saldo devedor
+            const ultimaParcelaNaoAmortizada = loan.parcelas - qtd - 1;
+            let novoSaldo = 0;
+            if (ultimaParcelaNaoAmortizada >= 0 && ultimaParcelaNaoAmortizada < loan.schedule.length) {
+                novoSaldo = loan.schedule[ultimaParcelaNaoAmortizada].saldo;
+            }
             
-            // Economia total = desconto + juros futuros evitados
-            const economiaTotal = desconto + (valorNominalTotal - valorPresenteTotal);
-            
-            // Mostrar resultado
-            const resultadoDiv = document.getElementById('amortizacao-resultado');
             const numerosParcelas = parcelasAmortizar.map(p => `#${p.num}`).join(', ');
+            
+            console.log('Valor nominal total:', valorNominalTotal);
+            console.log('Valor presente total:', valorPresenteTotal);
+            console.log('Desconto:', desconto);
+            
+            // Mostrar resultado na tela
+            const resultadoDiv = document.getElementById('amortizacao-resultado');
             
             resultadoDiv.innerHTML = `
                 <div class="amortization-result">
@@ -1410,7 +1424,7 @@
                         <span style="font-weight: 600; color: var(--warning);">${numerosParcelas}</span>
                     </div>
                     <div class="amortization-result-item" style="font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through;">
-                        <span>Valor nominal sem desconto:</span>
+                        <span>Valor nominal (sem desconto):</span>
                         <span>R$ ${valorNominalTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
                     <div class="amortization-result-item">
@@ -1418,7 +1432,7 @@
                         <span class="discount-highlight">R$ ${valorPresenteTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
                     <div class="amortization-result-item" style="font-size: 0.8rem; color: var(--success);">
-                        <span>↓ Desconto concedido:</span>
+                        <span>↓ Você economiza:</span>
                         <span>R$ ${desconto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
                     <div class="amortization-result-item">
@@ -1429,12 +1443,9 @@
                         <span>Novo prazo:</span>
                         <span>${parcelasRestantes - qtd} parcelas restantes</span>
                     </div>
-                    <div class="savings-highlight">
-                        💰 Economia total: R$ ${economiaTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                        <div style="font-size: 0.75rem; margin-top: 4px; opacity: 0.9;">
-                            (Desconto por antecipação + juros evitados)
-                        </div>
-                    </div>
+                </div>
+                <div class="savings-highlight">
+                    💰 Economia total: R$ ${desconto.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
                 </div>
                 <div style="margin-top: 12px; display: flex; gap: 8px;">
                     <button class="btn-success" onclick="confirmarAmortizacao(${index}, ${qtd})" style="flex: 1;">
@@ -1446,14 +1457,13 @@
                 </div>
             `;
             
-            // Guardar dados para uso posterior
+            // Guardar dados temporariamente
             loan.tempAmortizacao = {
                 qtd: qtd,
                 valorPresenteTotal: valorPresenteTotal,
                 valorNominalTotal: valorNominalTotal,
                 novoSaldo: novoSaldo,
-                parcelasNumeros: parcelasAmortizar.map(p => p.num),
-                indices: indicesAmortizar
+                parcelasNumeros: parcelasAmortizar.map(p => p.num)
             };
         }
         
@@ -1469,32 +1479,26 @@
             
             const { valorPresenteTotal, novoSaldo, parcelasNumeros } = loan.tempAmortizacao;
             
-            // Adicionar despesa com o valor PRESENTE (com desconto)
+            // Adicionar despesa com valor presente (com desconto)
             expenses.push({ 
                 id: Date.now(), 
                 type: 'expense', 
-                value: valorPresenteTotal, // Valor com desconto!
+                value: valorPresenteTotal, 
                 category: 'housing', 
                 desc: `Amortização antecipada ${qtd}x - ${loan.desc} (${parcelasNumeros.join(', ')})`, 
                 date: new Date().toISOString().split('T')[0],
                 isAmortization: true,
                 loanId: loan.id,
                 qtdParcelas: qtd,
-                parcelasAmortizadas: parcelasNumeros,
-                valorDesconto: loan.tempAmortizacao.valorNominalTotal - valorPresenteTotal
+                parcelasAmortizadas: parcelasNumeros
             });
             
-            // Marcar parcelas como amortizadas
+            // Atualizar empréstimo
             if (!loan.parcelasAmortizadas) loan.parcelasAmortizadas = [];
             loan.parcelasAmortizadas.push(...parcelasNumeros);
-            
-            // Reduzir total de parcelas do contrato
             loan.parcelas -= qtd;
-            
-            // Atualizar saldo devedor
             loan.saldoDevedor = novoSaldo;
             
-            // Limpar temp
             delete loan.tempAmortizacao;
             
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
@@ -1507,7 +1511,9 @@
         
         function viewLoanDetail(index) {
             selectedLoanIndex = index;
-            const loan = loans[index]; if (!loan) return;
+            const loan = loans[index]; 
+            if (!loan) return;
+            
             const nextParcel = loan.schedule[loan.parcelasPagas] || null;
             const parcelasRestantes = loan.parcelas - loan.parcelasPagas;
             const amortizadas = loan.parcelasAmortizadas || [];
@@ -1529,7 +1535,7 @@
                         <div style="font-size: 1.1rem; font-weight: 700;">${loan.taxa}% a.m.</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total Estimado</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total</div>
                         <div style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
@@ -1569,14 +1575,14 @@
                             ⚡ Amortização Antecipada (Últimas Parcelas)
                         </h4>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-                            Digite quantas parcelas deseja amortizar. O sistema calculará o <strong>valor presente com desconto</strong> conforme Resolução 3516 do Bacen.
+                            Digite quantas parcelas deseja amortizar. O sistema quitará as <strong>últimas</strong> parcelas com <strong>desconto de valor presente</strong>.
                         </p>
                         <div class="amortization-input-group">
                             <div class="input-group">
                                 <label class="input-label">Qtd. Parcelas (Máx: ${parcelasRestantes - 1})</label>
                                 <input type="number" class="input-field" id="amort-qtd" min="1" max="${parcelasRestantes - 1}" placeholder="Ex: 12">
                             </div>
-                            <button onclick="calcularAmortizacao(${index})">Calcular</button>
+                            <button type="button" onclick="calcularAmortizacao(${index})">Calcular</button>
                         </div>
                         <div id="amortizacao-resultado"></div>
                     </div>`;
@@ -1585,6 +1591,7 @@
             let tableRows = '';
             const startIdx = Math.max(0, loan.parcelasPagas - 2);
             const endIdx = Math.min(loan.schedule.length, startIdx + 15);
+            
             for (let i = startIdx; i < endIdx; i++) {
                 const p = loan.schedule[i];
                 const isPaid = i < loan.parcelasPagas;
@@ -1796,7 +1803,7 @@
             const isAmort = e.isAmortization;
             const icon = isAmort ? '⚡' : cat.split(' ')[0];
             const title = isAmort ? e.desc : (e.desc || cat);
-            const extraInfo = isAmort ? `<span style="color: var(--success); font-size: 0.7rem;">Economia: R$ ${(e.valorDesconto || 0).toFixed(2)}</span>` : '';
+            const extraInfo = isAmort ? `<span style="color: var(--success); font-size: 0.7rem;">Antecipação ${e.qtdParcelas}x</span>` : '';
             
             return `
             <div class="transaction-item" onclick="if(confirm('Excluir?')) deleteTransaction(${e.id})">
