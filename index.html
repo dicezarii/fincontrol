@@ -1,1406 +1,245 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0f">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>FinControl</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-            --bg: #0a0a0f;
-            --surface: #141419;
-            --surface-light: #1e1e26;
-            --surface-lighter: #252532;
-            --text: #ffffff;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --border: rgba(255,255,255,0.08);
-            --radius: 20px;
-            --radius-sm: 12px;
-            --radius-xs: 8px;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0 24px;
-            z-index: 1000;
-            backdrop-filter: blur(20px);
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-muted);
-        }
-        
-        .nav-item.active {
-            color: var(--primary);
-            background: rgba(99,102,241,0.1);
-        }
-        
-        .nav-icon { font-size: 1.4rem; }
-        .nav-label { font-size: 0.65rem; font-weight: 500; }
-        
-        .main-content {
-            padding: 20px 20px 100px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .hidden { display: none !important; }
-        
-        /* BALANCE CARD */
-        .balance-card {
-            background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.1) 100%);
-            border: 1px solid rgba(99,102,241,0.2);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .balance-label { 
-            font-size: 0.875rem; 
-            color: var(--text-secondary);
-        }
-        
-        .balance-value { 
-            font-size: 2.5rem; 
-            font-weight: 700; 
-            margin: 8px 0;
-        }
-        
-        .balance-trend {
-            display: flex;
-            gap: 16px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
-        /* QUICK ACTIONS */
-        .quick-actions {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-        }
-        
-        .quick-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 50px;
-            color: var(--text);
-            font-size: 0.875rem;
-            font-weight: 500;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .quick-btn:active { transform: scale(0.95); }
-        .quick-btn.income { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: var(--success); }
-        .quick-btn.expense { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--danger); }
-        .quick-btn.calc { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--info); }
-        
-        /* SECTIONS */
-        .section { margin-bottom: 24px; }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        
-        .see-all {
-            font-size: 0.875rem;
-            color: var(--primary);
-            cursor: pointer;
-        }
-        
-        /* TRANSACTION LIST */
-        .transaction-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--surface);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .transaction-item:active { background: var(--surface-light); }
-        
-        .tx-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            background: var(--bg);
-        }
-        
-        .tx-info { flex: 1; }
-        .tx-title { font-weight: 500; font-size: 0.9rem; }
-        .tx-date { font-size: 0.75rem; color: var(--text-muted); }
-        .tx-amount { font-weight: 700; font-size: 0.95rem; }
-        .tx-amount.income { color: var(--success); }
-        .tx-amount.expense { color: var(--danger); }
-        
-        /* LOAN CARDS */
-        .loan-card {
-            background: var(--surface);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .loan-card:active { background: var(--surface-light); }
-        
-        .loan-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .loan-title { font-weight: 600; }
-        .loan-amount { font-size: 1.2rem; font-weight: 700; color: var(--danger); }
-        
-        .progress-bar {
-            height: 6px;
-            background: var(--bg);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--success), var(--primary));
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-        
-        .loan-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-        
-        /* BOTTOM SHEET */
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border-radius: var(--radius) var(--radius) 0 0;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            z-index: 2000;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .bottom-sheet.active {
-            transform: translateY(0);
-        }
-        
-        .sheet-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 1999;
-        }
-        
-        .sheet-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .sheet-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            background: var(--surface);
-            z-index: 10;
-        }
-        
-        .sheet-handle {
-            width: 40px;
-            height: 4px;
-            background: var(--text-muted);
-            border-radius: 2px;
-            margin: 12px auto;
-        }
-        
-        .sheet-content { padding: 0 20px 40px; }
-        
-        /* INPUTS */
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        .input-label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 16px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text);
-            font-size: 1rem;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .amount-display {
-            font-size: 3rem;
-            font-weight: 700;
-            text-align: center;
-            padding: 24px;
-            color: var(--primary);
-        }
-        
-        /* KEYPAD */
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin: 20px 0;
-        }
-        
-        .key {
-            aspect-ratio: 1.2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--surface-light);
-            border: none;
-            border-radius: 16px;
-            color: var(--text);
-            font-size: 1.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-        
-        .key:active { background: var(--primary); transform: scale(0.95); }
-        .key.action { background: var(--danger); }
-        .key.wide { grid-column: span 2; aspect-ratio: 2.4; }
-        
-        /* CATEGORY GRID */
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin: 20px 0;
-        }
-        
-        .category-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 8px;
-            background: var(--surface-light);
-            border: 2px solid transparent;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .category-item:active { transform: scale(0.95); }
-        .category-item.selected {
-            border-color: var(--primary);
-            background: rgba(99,102,241,0.1);
-        }
-        
-        .cat-emoji { font-size: 1.8rem; }
-        .cat-name { font-size: 0.75rem; color: var(--text-secondary); }
-        
-        /* BUTTONS */
-        .btn-primary {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary);
-            border: none;
-            border-radius: var(--radius-sm);
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .btn-secondary {
-            width: 100%;
-            padding: 14px;
-            background: var(--surface-light);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 12px;
-        }
-        
-        /* CALCULATOR */
-        .calc-display {
-            background: var(--bg);
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            text-align: right;
-        }
-        
-        .calc-expr { 
-            font-size: 0.9rem;
-            color: var(--text-muted); 
-            min-height: 20px;
-            word-break: break-all; 
-        }
-        
-        .calc-result { 
-            font-size: 2.2rem;
-            font-weight: 700; 
-            color: var(--info); 
-        }
-        
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        
-        .calc-btn {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--surface-light);
-            border: none;
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 1.2rem;
-            font-weight: 600;
-            cursor: pointer;
-            height: 60px;
-        }
-        
-        .calc-btn:active { background: var(--primary); }
-        .calc-btn.op { background: var(--warning); color: white; }
-        .calc-btn.eq { background: var(--success); color: white; }
-        .calc-btn.wide { grid-column: span 2; aspect-ratio: 2; }
-        
-        /* LOAN DETAIL */
-        .installment-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            font-size: 0.85rem;
-        }
-        
-        .installment-table th,
-        .installment-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .installment-table th {
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-        
-        .installment-table tr.paid { opacity: 0.5; }
-        .installment-table tr.next { background: rgba(99,102,241,0.1); }
-        
-        .amortization-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .amortization-tab {
-            flex: 1;
-            padding: 12px;
-            background: var(--surface-light);
-            border: 2px solid transparent;
-            border-radius: var(--radius-xs);
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
-        
-        .amortization-tab.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(99,102,241,0.1);
-        }
-        
-        /* TOAST */
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--surface);
-            color: var(--text);
-            padding: 16px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            border: 1px solid var(--border);
-            z-index: 3000;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-        
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-    </style>
-</head>
-<body>
-    <!-- MAIN VIEW (HOME) -->
-    <div class="main-content" id="main-view">
-        <!-- BALANCE CARD -->
-        <div class="balance-card">
-            <div class="balance-label">Saldo Total</div>
-            <div class="balance-value" id="total-balance">R$ 0,00</div>
-            <div class="balance-trend">
-                <span id="income-badge">↑ R$ 0,00</span>
-                <span id="expense-badge">↓ R$ 0,00</span>
-                <span id="loan-badge">💳 R$ 0,00</span>
-            </div>
-        </div>
-        
-        <!-- QUICK ACTIONS -->
-        <div class="quick-actions">
-            <button class="quick-btn expense" onclick="openTransactionSheet('expense')">
-                <span>💸</span> Despesa
-            </button>
-            <button class="quick-btn income" onclick="openTransactionSheet('income')">
-                <span>💵</span> Receita
-            </button>
-            <button class="quick-btn calc" onclick="openSheet('calc-sheet')">
-                <span>🧮</span> Calc
-            </button>
-        </div>
-        
-        <!-- TRANSACTIONS SECTION -->
-        <div class="section">
-            <div class="section-header">
-                <span class="section-title">Últimos Lançamentos</span>
-                <span class="see-all" onclick="showAllTransactions()">Ver todos</span>
-            </div>
-            <div class="transaction-list" id="recent-list">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-        
-        <!-- LOANS SECTION -->
-        <div class="section">
-            <div class="section-header">
-                <span class="section-title">Empréstimos e Financiamentos</span>
-                <span class="see-all" onclick="openSheet('loan-sheet')">+ Novo</span>
-            </div>
-            <div id="loans-list">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- ALL TRANSACTIONS VIEW -->
-    <div class="main-content hidden" id="all-transactions-view">
-        <div class="section-header" style="margin-bottom: 20px;">
-            <button class="quick-btn" onclick="showView('main-view')" style="padding: 8px 16px;">← Voltar</button>
-            <span class="section-title">Todos os Lançamentos</span>
-        </div>
-        <div class="transaction-list" id="full-transactions-list"></div>
-    </div>
+// ==================== SETTINGS ====================
+let currentEditingBank = null;
+let currentCatType = 'expense';
 
-    <!-- BOTTOM SHEET OVERLAY -->
-    <div class="sheet-overlay" onclick="closeAllSheets()"></div>
-    
-    <!-- TRANSACTION SHEET -->
-    <div class="bottom-sheet" id="transaction-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <h3 id="sheet-title">Nova Despesa</h3>
-            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
-        </div>
-        <div class="sheet-content">
-            <div class="amount-display" id="sheet-amount">R$ 0,00</div>
-            
-            <div class="keypad">
-                <button class="key" onclick="addDigit(1)">1</button>
-                <button class="key" onclick="addDigit(2)">2</button>
-                <button class="key" onclick="addDigit(3)">3</button>
-                <button class="key" onclick="addDigit(4)">4</button>
-                <button class="key" onclick="addDigit(5)">5</button>
-                <button class="key" onclick="addDigit(6)">6</button>
-                <button class="key" onclick="addDigit(7)">7</button>
-                <button class="key" onclick="addDigit(8)">8</button>
-                <button class="key" onclick="addDigit(9)">9</button>
-                <button class="key wide" onclick="addDigit(0)">0</button>
-                <button class="key action" onclick="removeDigit()">⌫</button>
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Descrição</label>
-                <input type="text" class="input-field" id="tx-desc" placeholder="Ex: Supermercado">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Banco</label>
-                <select class="input-field" id="tx-bank">
-                    <option value="">Selecione...</option>
-                </select>
-            </div>
-            
-            <div class="input-group" id="installment-group">
-                <label class="input-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" id="tx-installment" onchange="toggleInstallment()">
-                    Parcelar compra
-                </label>
-                <div id="installment-options" style="display: none; margin-top: 12px;">
-                    <select class="input-field" id="tx-parcelas" style="margin-bottom: 8px;">
-                        <option value="2">2x</option>
-                        <option value="3">3x</option>
-                        <option value="4">4x</option>
-                        <option value="5">5x</option>
-                        <option value="6">6x</option>
-                        <option value="12">12x</option>
-                    </select>
-                    <input type="date" class="input-field" id="tx-first-date">
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Categoria</label>
-                <div class="category-grid" id="tx-categories"></div>
-            </div>
-            
-            <button class="btn-primary" id="save-tx-btn" onclick="saveTransaction()" disabled>
-                Confirmar
-            </button>
-        </div>
-    </div>
-    
-    <!-- CALCULATOR SHEET -->
-    <div class="bottom-sheet" id="calc-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <h3>Calculadora</h3>
-            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
-        </div>
-        <div class="sheet-content">
-            <div class="calc-display">
-                <div class="calc-expr" id="calc-expr"></div>
-                <div class="calc-result" id="calc-res">0</div>
-            </div>
-            <div class="calc-grid">
-                <button class="calc-btn" onclick="calcClear()">C</button>
-                <button class="calc-btn" onclick="calcBack()">⌫</button>
-                <button class="calc-btn op" onclick="calcOp('/')">÷</button>
-                <button class="calc-btn op" onclick="calcOp('*')">×</button>
-                
-                <button class="calc-btn" onclick="calcNum(7)">7</button>
-                <button class="calc-btn" onclick="calcNum(8)">8</button>
-                <button class="calc-btn" onclick="calcNum(9)">9</button>
-                <button class="calc-btn op" onclick="calcOp('-')">−</button>
-                
-                <button class="calc-btn" onclick="calcNum(4)">4</button>
-                <button class="calc-btn" onclick="calcNum(5)">5</button>
-                <button class="calc-btn" onclick="calcNum(6)">6</button>
-                <button class="calc-btn op" onclick="calcOp('+')">+</button>
-                
-                <button class="calc-btn" onclick="calcNum(1)">1</button>
-                <button class="calc-btn" onclick="calcNum(2)">2</button>
-                <button class="calc-btn" onclick="calcNum(3)">3</button>
-                <button class="calc-btn eq" onclick="calcEqual()">=</button>
-                
-                <button class="calc-btn wide" onclick="calcNum(0)">0</button>
-                <button class="calc-btn" onclick="calcNum('.')">.</button>
-            </div>
-            <button class="btn-primary" onclick="useCalcResult()" style="margin-top: 16px;">
-                Usar Resultado
-            </button>
-        </div>
-    </div>
-    
-    <!-- LOAN SHEET -->
-    <div class="bottom-sheet" id="loan-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <h3>Novo Empréstimo/Financiamento</h3>
-            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
-        </div>
-        <div class="sheet-content">
-            <div class="input-group">
-                <label class="input-label">Descrição</label>
-                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Financiamento Carro">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Valor Financiado (R$)</label>
-                <input type="number" class="input-field" id="loan-value" placeholder="50000" step="0.01">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Taxa de Juros Mensal (%)</label>
-                <input type="number" class="input-field" id="loan-rate" placeholder="1.5" step="0.01">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Número de Parcelas</label>
-                <input type="number" class="input-field" id="loan-months" placeholder="48" min="1">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Sistema de Amortização</label>
-                <div class="amortization-tabs">
-                    <div class="amortization-tab active" onclick="selectAmortization('price')" id="tab-price">
-                        PRICE<br><small style="font-size: 0.75rem; font-weight: 400;">Parcelas Fixas</small>
-                    </div>
-                    <div class="amortization-tab" onclick="selectAmortization('sac')" id="tab-sac">
-                        SAC<br><small style="font-size: 0.75rem; font-weight: 400;">Decrescentes</small>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">Data da Primeira Parcela</label>
-                <input type="date" class="input-field" id="loan-start-date">
-            </div>
-            
-            <button class="btn-primary" onclick="saveLoan()">Simular e Salvar</button>
-        </div>
-    </div>
-    
-    <!-- LOAN DETAIL SHEET -->
-    <div class="bottom-sheet" id="loan-detail-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header">
-            <h3>Detalhes do Financiamento</h3>
-            <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
-        </div>
-        <div class="sheet-content" id="loan-detail-content">
-            <!-- Populated by JS -->
-        </div>
-    </div>
+function renderSettings() {
+    renderBanksList();
+    renderCategoriesList();
+}
 
-    <!-- BOTTOM NAVIGATION -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="setNav(this, 'home')">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Início</span>
-        </div>
-        <div class="nav-item" onclick="setNav(this, 'banks')">
-            <span class="nav-icon">🏦</span>
-            <span class="nav-label">Bancos</span>
-        </div>
-        <div class="nav-item" onclick="openTransactionSheet('expense')" style="background: var(--primary); border-radius: 50%; width: 56px; height: 56px; margin-top: -20px;">
-            <span class="nav-icon" style="font-size: 1.8rem;">➕</span>
-        </div>
-        <div class="nav-item" onclick="setNav(this, 'loans')">
-            <span class="nav-icon">💳</span>
-            <span class="nav-label">Dívidas</span>
-        </div>
-        <div class="nav-item" onclick="setNav(this, 'more')">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Mais</span>
-        </div>
-    </nav>
-
-    <!-- TOAST -->
-    <div class="toast" id="toast"></div>
-
-    <script>
-        // ==================== DATA ====================
-        const defaultCats = {
-            expense: { food: '🍔 Alimentação', transport: '🚌 Transporte', leisure: '🎮 Lazer', health: '💊 Saúde', housing: '🏠 Moradia', shopping: '🛍️ Compras' },
-            income: { salary: '💰 Salário', freelance: '💻 Freelance', investment: '📈 Investimentos', gift: '🎁 Presente' }
-        };
+function renderBanksList() {
+    const container = document.getElementById('banks-list-settings');
+    if (banks.length === 0) {
+        container.innerHTML = `
+            <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.9rem; background: var(--surface); border-radius: 12px;">
+                Nenhum banco cadastrado.<br>Adicione seu primeiro banco acima.
+            </div>`;
+        return;
+    }
+    
+    container.innerHTML = banks.map((bank, index) => {
+        const bankTx = expenses.filter(e => e.bankId == bank.id);
+        const income = bankTx.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
+        const expense = bankTx.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
+        const currentBalance = (bank.initial || 0) + income - expense;
         
-        let expenses = JSON.parse(localStorage.getItem('fc_expenses') || '[]');
-        let banks = JSON.parse(localStorage.getItem('fc_banks') || '[]');
-        let loans = JSON.parse(localStorage.getItem('fc_loans') || '[]');
-        let categories = JSON.parse(localStorage.getItem('fc_cats') || JSON.stringify(defaultCats));
-        
-        let currentAmount = 0;
-        let currentType = 'expense';
-        let selectedCategory = null;
-        let calcExpr = '';
-        let currentAmortization = 'price';
-        let selectedLoanIndex = null;
-
-        // ==================== INIT ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('App iniciado');
-            document.getElementById('tx-first-date').valueAsDate = new Date();
-            document.getElementById('loan-start-date').valueAsDate = new Date();
-            updateUI();
-        });
-        
-        // ==================== NAVIGATION ====================
-        function setNav(element, nav) {
-            console.log('Nav:', nav);
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            element.classList.add('active');
-            
-            if (nav === 'home') {
-                showView('main-view');
-            } else if (nav === 'banks') {
-                showToast('Funcionalidade de bancos em desenvolvimento');
-            } else if (nav === 'loans') {
-                openSheet('loan-sheet');
-            } else if (nav === 'more') {
-                showToast('Configurações em desenvolvimento');
-            }
-        }
-        
-        function showView(viewId) {
-            console.log('Show view:', viewId);
-            document.querySelectorAll('.main-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-        }
-        
-        function showAllTransactions() {
-            console.log('Show all transactions');
-            const list = document.getElementById('full-transactions-list');
-            list.innerHTML = expenses.map(e => renderTx(e)).join('') || 
-                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
-            showView('all-transactions-view');
-        }
-        
-        // ==================== SHEETS ====================
-        function openSheet(sheetId) {
-            console.log('Open sheet:', sheetId);
-            document.querySelector('.sheet-overlay').classList.add('active');
-            document.getElementById(sheetId).classList.add('active');
-            
-            if (sheetId === 'transaction-sheet') {
-                renderCategories();
-                updateAmount();
-            }
-        }
-        
-        function openTransactionSheet(type) {
-            console.log('Open transaction sheet:', type);
-            currentType = type;
-            document.getElementById('sheet-title').textContent = type === 'expense' ? 'Nova Despesa' : 'Nova Receita';
-            document.getElementById('installment-group').style.display = type === 'expense' ? 'block' : 'none';
-            
-            currentAmount = 0;
-            selectedCategory = null;
-            document.getElementById('tx-desc').value = '';
-            document.getElementById('tx-installment').checked = false;
-            document.getElementById('installment-options').style.display = 'none';
-            
-            openSheet('transaction-sheet');
-            renderCategories();
-            updateAmount();
-        }
-        
-        function closeAllSheets() {
-            console.log('Close all sheets');
-            document.querySelector('.sheet-overlay').classList.remove('active');
-            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
-        }
-        
-        // ==================== KEYPAD ====================
-        function addDigit(d) {
-            console.log('Add digit:', d);
-            let cents = Math.round(currentAmount * 100);
-            
-            if (cents === 0 && d === 0) {
-                currentAmount = 0;
-                updateAmount();
-                return;
-            }
-            
-            cents = (cents * 10) + d;
-            currentAmount = cents / 100;
-            
-            if (currentAmount < 100000) {
-                updateAmount();
-            }
-        }
-        
-        function removeDigit() {
-            console.log('Remove digit');
-            let cents = Math.round(currentAmount * 100);
-            cents = Math.floor(cents / 10);
-            currentAmount = cents / 100;
-            updateAmount();
-        }
-        
-        function updateAmount() {
-            document.getElementById('sheet-amount').textContent = `R$ ${currentAmount.toFixed(2)}`;
-            document.getElementById('save-tx-btn').disabled = currentAmount <= 0 || !selectedCategory;
-        }
-        
-        function toggleInstallment() {
-            const show = document.getElementById('tx-installment').checked;
-            document.getElementById('installment-options').style.display = show ? 'block' : 'none';
-        }
-        
-        // ==================== CATEGORIES ====================
-        function renderCategories() {
-            const cats = categories[currentType] || {};
-            const html = Object.entries(cats).map(([id, name]) => `
-                <div class="category-item ${selectedCategory === id ? 'selected' : ''}" onclick="selectCategory('${id}')">
-                    <span class="cat-emoji">${name.split(' ')[0]}</span>
-                    <span class="cat-name">${name.split(' ').slice(1).join(' ')}</span>
-                </div>
-            `).join('');
-            document.getElementById('tx-categories').innerHTML = html;
-        }
-        
-        function selectCategory(id) {
-            console.log('Select category:', id);
-            selectedCategory = id;
-            renderCategories();
-            updateAmount();
-        }
-        
-        // ==================== SAVE TRANSACTION ====================
-        function saveTransaction() {
-            console.log('Save transaction');
-            if (currentAmount <= 0 || !selectedCategory) return;
-            
-            const desc = document.getElementById('tx-desc').value;
-            const bankId = document.getElementById('tx-bank').value;
-            const isInstallment = document.getElementById('tx-installment').checked;
-            const catName = categories[currentType][selectedCategory] || 'Desconhecido';
-            
-            if (isInstallment && currentType === 'expense') {
-                const parcelas = parseInt(document.getElementById('tx-parcelas').value);
-                const firstDate = document.getElementById('tx-first-date').value;
-                const groupId = Date.now();
-                
-                for (let i = 0; i < parcelas; i++) {
-                    const date = new Date(firstDate);
-                    date.setMonth(date.getMonth() + i);
-                    expenses.push({
-                        id: Date.now() + i,
-                        type: currentType,
-                        value: currentAmount,
-                        category: selectedCategory,
-                        desc: `${desc || catName} ${i+1}/${parcelas}`,
-                        bankId,
-                        date: date.toISOString().split('T')[0],
-                        groupId
-                    });
-                }
-                showToast(`✅ ${parcelas}x de R$ ${currentAmount.toFixed(2)} adicionadas`);
-            } else {
-                expenses.push({
-                    id: Date.now(),
-                    type: currentType,
-                    value: currentAmount,
-                    category: selectedCategory,
-                    desc: desc || catName,
-                    bankId,
-                    date: new Date().toISOString().split('T')[0]
-                });
-                showToast('✅ Lançamento adicionado');
-            }
-            
-            localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-            closeAllSheets();
-            updateUI();
-        }
-        
-        // ==================== CALCULATOR ====================
-        function calcNum(n) {
-            calcExpr += n;
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
-        function calcOp(op) {
-            calcExpr += ` ${op} `;
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
-        function calcClear() {
-            calcExpr = '';
-            document.getElementById('calc-expr').textContent = '';
-            document.getElementById('calc-res').textContent = '0';
-        }
-        
-        function calcBack() {
-            calcExpr = calcExpr.slice(0, -1);
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
-        function calcEqual() {
-            try {
-                const res = eval(calcExpr.replace(/×/g, '*').replace(/÷/g, '/'));
-                document.getElementById('calc-res').textContent = res.toFixed(2);
-                calcExpr = String(res);
-            } catch {
-                showToast('Erro no cálculo');
-            }
-        }
-        
-        function useCalcResult() {
-            const res = parseFloat(document.getElementById('calc-res').textContent);
-            if (res > 0) {
-                currentAmount = res;
-                closeAllSheets();
-                openTransactionSheet('expense');
-            }
-        }
-        
-        // ==================== LOAN / FINANCING ====================
-        function selectAmortization(type) {
-            currentAmortization = type;
-            document.querySelectorAll('.amortization-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-${type}`).classList.add('active');
-        }
-        
-        function calculatePrice(valor, taxa, parcelas) {
-            const i = taxa / 100;
-            const pmt = valor * (i * Math.pow(1 + i, parcelas)) / (Math.pow(1 + i, parcelas) - 1);
-            
-            const schedule = [];
-            let saldo = valor;
-            let totalJuros = 0;
-            
-            for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i;
-                const amortizacao = pmt - juros;
-                saldo -= amortizacao;
-                totalJuros += juros;
-                
-                schedule.push({
-                    parcela: p,
-                    valor: pmt,
-                    juros: juros,
-                    amortizacao: amortizacao,
-                    saldo: Math.max(0, saldo)
-                });
-            }
-            
-            return { parcelaFixa: pmt, totalJuros, schedule };
-        }
-        
-        function calculateSAC(valor, taxa, parcelas) {
-            const amortizacao = valor / parcelas;
-            const i = taxa / 100;
-            
-            const schedule = [];
-            let saldo = valor;
-            let totalJuros = 0;
-            
-            for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i;
-                const pmt = amortizacao + juros;
-                saldo -= amortizacao;
-                totalJuros += juros;
-                
-                schedule.push({
-                    parcela: p,
-                    valor: pmt,
-                    juros: juros,
-                    amortizacao: amortizacao,
-                    saldo: Math.max(0, saldo)
-                });
-            }
-            
-            return { amortizacaoFixa: amortizacao, totalJuros, schedule };
-        }
-        
-        function saveLoan() {
-            console.log('Save loan');
-            const desc = document.getElementById('loan-desc').value;
-            const valor = parseFloat(document.getElementById('loan-value').value) || 0;
-            const taxa = parseFloat(document.getElementById('loan-rate').value) || 0;
-            const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
-            const startDate = document.getElementById('loan-start-date').value;
-            
-            if (!desc || valor <= 0 || taxa < 0 || parcelas <= 0) {
-                showToast('Preencha todos os campos corretamente');
-                return;
-            }
-            
-            let calc;
-            if (currentAmortization === 'price') {
-                calc = calculatePrice(valor, taxa, parcelas);
-            } else {
-                calc = calculateSAC(valor, taxa, parcelas);
-            }
-            
-            const loan = {
-                id: Date.now(),
-                desc,
-                valor,
-                taxa,
-                parcelas,
-                amortization: currentAmortization,
-                startDate,
-                parcelaAtual: 1,
-                parcelasPagas: 0,
-                saldoDevedor: valor,
-                totalJuros: calc.totalJuros,
-                schedule: calc.schedule
-            };
-            
-            loans.push(loan);
-            localStorage.setItem('fc_loans', JSON.stringify(loans));
-            
-            showToast(`💳 ${currentAmortization.toUpperCase()} calculado e salvo!`);
-            closeAllSheets();
-            updateUI();
-            viewLoanDetail(loans.length - 1);
-        }
-        
-        function viewLoanDetail(index) {
-            console.log('View loan detail:', index);
-            selectedLoanIndex = index;
-            const loan = loans[index];
-            if (!loan) return;
-            
-            const currentParcel = loan.schedule[loan.parcelasPagas] || loan.schedule[loan.schedule.length - 1];
-            const nextParcel = loan.schedule[loan.parcelasPagas] || null;
-            
-            let html = `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 1.3rem; margin-bottom: 8px;">${loan.desc}</h2>
-                    <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                        ${loan.amortization.toUpperCase()}
-                    </span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
-                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Valor Financiado</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.valor.toFixed(2)}</div>
+        return `
+        <div class="loan-card" onclick="editBank(${index})" style="border-left: 4px solid ${bank.color || '#6366f1'};">
+            <div class="loan-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; background: ${bank.color || '#6366f1'}20; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        🏦
                     </div>
-                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Taxa de Juros</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">${loan.taxa}% a.m.</div>
-                    </div>
-                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Total de Juros</div>
-                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toFixed(2)}</div>
-                    </div>
-                    <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Saldo Devedor</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.saldoDevedor.toFixed(2)}</div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.875rem;">
-                        <span>Progresso</span>
-                        <span>${loan.parcelasPagas} de ${loan.parcelas} parcelas</span>
-                    </div>
-                    <div style="height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); border-radius: 4px; width: ${(loan.parcelasPagas / loan.parcelas) * 100}%"></div>
-                    </div>
-                </div>
-            `;
-            
-            if (nextParcel) {
-                html += `
-                    <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 4px;">Próxima Parcela (#${nextParcel.parcela})</div>
-                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">R$ ${nextParcel.valor.toFixed(2)}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">
-                            Juros: R$ ${nextParcel.juros.toFixed(2)} | Amortização: R$ ${nextParcel.amortizacao.toFixed(2)}
+                    <div>
+                        <div class="loan-title">${bank.name}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                            ${bankTx.length} transações
                         </div>
                     </div>
-                    
-                    <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">
-                        💸 Pagar Parcela ${nextParcel.parcela}
-                    </button>
-                `;
-            }
-            
-            // Tabela de parcelas (primeiras 12 ou todas pagas + próximas 3)
-            let tableRows = '';
-            const startIdx = Math.max(0, loan.parcelasPagas - 2);
-            const endIdx = Math.min(loan.schedule.length, startIdx + 15);
-            
-            for (let i = startIdx; i < endIdx; i++) {
-                const p = loan.schedule[i];
-                const isPaid = i < loan.parcelasPagas;
-                const isNext = i === loan.parcelasPagas;
-                
-                tableRows += `
-                    <tr class="${isPaid ? 'paid' : ''} ${isNext ? 'next' : ''}">
-                        <td>${p.parcela}</td>
-                        <td>R$ ${p.valor.toFixed(2)}</td>
-                        <td>R$ ${p.juros.toFixed(2)}</td>
-                        <td>R$ ${p.amortizacao.toFixed(2)}</td>
-                        <td>R$ ${p.saldo.toFixed(2)}</td>
-                    </tr>
-                `;
-            }
-            
-            html += `
-                <div style="margin-top: 24px;">
-                    <h4 style="margin-bottom: 12px; font-size: 1rem;">Tabela de Amortização</h4>
-                    <div style="overflow-x: auto;">
-                        <table class="installment-table">
-                            <thead>
-                                <tr>
-                                    <th>Nº</th>
-                                    <th>Valor</th>
-                                    <th>Juros</th>
-                                    <th>Amort.</th>
-                                    <th>Saldo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
-                        </table>
-                    </div>
-                    ${endIdx < loan.schedule.length ? `<div style="text-align: center; color: var(--text-muted); margin-top: 8px; font-size: 0.8rem;">... e mais ${loan.schedule.length - endIdx} parcelas</div>` : ''}
                 </div>
-                
-                <button class="btn-secondary" onclick="deleteLoan(${index})" style="color: var(--danger); border-color: var(--danger); margin-top: 20px;">
-                    🗑️ Excluir Financiamento
-                </button>
-            `;
+                <div style="text-align: right;">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                        R$ ${currentBalance.toFixed(2)}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">
+                        Inicial: R$ ${(bank.initial || 0).toFixed(2)}
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function renderCategoriesList() {
+    // Despesas
+    const expContainer = document.getElementById('expense-cats-list');
+    expContainer.innerHTML = Object.entries(categories.expense || {}).map(([id, name]) => `
+        <span style="background: var(--bg); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border);">
+            ${name} <span style="cursor: pointer; color: var(--danger);" onclick="deleteCategory('expense', '${id}')">×</span>
+        </span>
+    `).join('');
+    
+    // Receitas
+    const incContainer = document.getElementById('income-cats-list');
+    incContainer.innerHTML = Object.entries(categories.income || {}).map(([id, name]) => `
+        <span style="background: var(--bg); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border);">
+            ${name} <span style="cursor: pointer; color: var(--danger);" onclick="deleteCategory('income', '${id}')">×</span>
+        </span>
+    `).join('');
+}
+
+// ==================== BANKS MANAGEMENT ====================
+function openBankSheet() {
+    currentEditingBank = null;
+    document.getElementById('bank-sheet-title').textContent = 'Novo Banco';
+    document.getElementById('bank-name').value = '';
+    document.getElementById('bank-initial').value = '';
+    document.getElementById('bank-color').value = '#6366f1';
+    document.getElementById('btn-delete-bank').style.display = 'none';
+    openSheet('bank-sheet');
+}
+
+function editBank(index) {
+    currentEditingBank = index;
+    const bank = banks[index];
+    document.getElementById('bank-sheet-title').textContent = 'Editar Banco';
+    document.getElementById('bank-name').value = bank.name;
+    document.getElementById('bank-initial').value = bank.initial || 0;
+    document.getElementById('bank-color').value = bank.color || '#6366f1';
+    document.getElementById('btn-delete-bank').style.display = 'block';
+    openSheet('bank-sheet');
+}
+
+function saveBank() {
+    const name = document.getElementById('bank-name').value.trim();
+    const initial = parseFloat(document.getElementById('bank-initial').value) || 0;
+    const color = document.getElementById('bank-color').value;
+    
+    if (!name) {
+        showToast('Digite o nome do banco');
+        return;
+    }
+    
+    if (currentEditingBank !== null) {
+        banks[currentEditingBank] = { ...banks[currentEditingBank], name, initial, color };
+        showToast('Banco atualizado');
+    } else {
+        banks.push({ id: Date.now(), name, initial, color });
+        showToast('Banco adicionado');
+    }
+    
+    localStorage.setItem('fc_banks', JSON.stringify(banks));
+    closeAllSheets();
+    renderSettings();
+    updateUI();
+}
+
+function deleteCurrentBank() {
+    if (currentEditingBank === null) return;
+    if (!confirm('Tem certeza? Todas as transações deste banco ficarão sem vínculo.')) return;
+    
+    banks.splice(currentEditingBank, 1);
+    localStorage.setItem('fc_banks', JSON.stringify(banks));
+    showToast('Banco removido');
+    closeAllSheets();
+    renderSettings();
+    updateUI();
+}
+
+// ==================== CATEGORIES MANAGEMENT ====================
+function openCategorySheet(type) {
+    currentCatType = type;
+    document.getElementById('cat-emoji-input').value = '';
+    document.getElementById('cat-name-input').value = '';
+    openSheet('category-sheet');
+}
+
+function saveCategory() {
+    const emoji = document.getElementById('cat-emoji-input').value.trim();
+    const name = document.getElementById('cat-name-input').value.trim();
+    
+    if (!emoji || !name) {
+        showToast('Preencha ícone e nome');
+        return;
+    }
+    
+    const id = name.toLowerCase().replace(/\s+/g, '_');
+    if (!categories[currentCatType]) categories[currentCatType] = {};
+    categories[currentCatType][id] = `${emoji} ${name}`;
+    
+    localStorage.setItem('fc_cats', JSON.stringify(categories));
+    showToast('Categoria adicionada');
+    closeAllSheets();
+    renderSettings();
+}
+
+function deleteCategory(type, id) {
+    if (!confirm('Remover esta categoria?')) return;
+    delete categories[type][id];
+    localStorage.setItem('fc_cats', JSON.stringify(categories));
+    renderSettings();
+}
+
+// ==================== DATA EXPORT/IMPORT ====================
+function exportData() {
+    const data = {
+        expenses,
+        banks,
+        loans,
+        categories,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fincontrol_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup exportado!');
+}
+
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
             
-            document.getElementById('loan-detail-content').innerHTML = html;
-            openSheet('loan-detail-sheet');
-        }
-        
-        function payLoanParcel(index) {
-            console.log('Pay loan parcel:', index);
-            const loan = loans[index];
-            if (!loan || loan.parcelasPagas >= loan.parcelas) {
-                showToast('Todas parcelas já pagas');
+            if (!confirm(`Isso substituirá todos os dados atuais.\n\nDespesas: ${data.expenses?.length || 0}\nBancos: ${data.banks?.length || 0}\nEmpréstimos: ${data.loans?.length || 0}\n\nContinuar?`)) {
                 return;
             }
             
-            const parcel = loan.schedule[loan.parcelasPagas];
-            
-            // Add as expense
-            expenses.push({
-                id: Date.now(),
-                type: 'expense',
-                value: parcel.valor,
-                category: 'housing',
-                desc: `Parcela ${parcel.parcela}/${loan.parcelas} - ${loan.desc}`,
-                date: new Date().toISOString().split('T')[0]
-            });
-            
-            // Update loan
-            loan.parcelasPagas++;
-            loan.saldoDevedor = parcel.saldo;
+            expenses = data.expenses || [];
+            banks = data.banks || [];
+            loans = data.loans || [];
+            categories = data.categories || defaultCats;
             
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
+            localStorage.setItem('fc_banks', JSON.stringify(banks));
             localStorage.setItem('fc_loans', JSON.stringify(loans));
+            localStorage.setItem('fc_cats', JSON.stringify(categories));
             
-            showToast(`✅ Parcela ${parcel.parcela} paga!`);
             updateUI();
-            viewLoanDetail(index);
+            renderSettings();
+            showToast('Dados importados com sucesso!');
+        } catch (err) {
+            showToast('Erro ao importar arquivo');
+            console.error(err);
         }
-        
-        function deleteLoan(index) {
-            if (confirm('Tem certeza que deseja excluir este financiamento?')) {
-                loans.splice(index, 1);
-                localStorage.setItem('fc_loans', JSON.stringify(loans));
-                showToast('Financiamento removido');
-                closeAllSheets();
-                updateUI();
-            }
-        }
-        
-        // ==================== UI UPDATES ====================
-        function updateUI() {
-            console.log('Update UI');
-            
-            // Balance
-            const income = expenses.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
-            const expense = expenses.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
-            const bankBalance = banks.reduce((s, b) => s + (b.initial || 0), 0);
-            const loanTotal = loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0);
-            
-            document.getElementById('total-balance').textContent = `R$ ${bankBalance.toFixed(2)}`;
-            document.getElementById('income-badge').textContent = `↑ R$ ${income.toFixed(2)}`;
-            document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toFixed(2)}`;
-            document.getElementById('loan-badge').textContent = `💳 R$ ${loanTotal.toFixed(2)}`;
-            
-            // Bank select options
-            const bankSelect = document.getElementById('tx-bank');
-            if (bankSelect) {
-                bankSelect.innerHTML = '<option value="">Selecione...</option>' + 
-                    banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-            }
-            
-            // Recent transactions
-            const recent = expenses.slice(0, 5);
-            document.getElementById('recent-list').innerHTML = recent.map(e => renderTx(e)).join('') || 
-                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento ainda</div>';
-            
-            // Loans list
-            document.getElementById('loans-list').innerHTML = loans.map((l, index) => `
-                <div class="loan-card" onclick="viewLoanDetail(${index})">
-                    <div class="loan-header">
-                        <div>
-                            <div class="loan-title">${l.desc}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                                ${l.amortization.toUpperCase()} | ${l.parcelas}x de R$ ${l.schedule[0]?.valor.toFixed(2) || '0.00'}
-                            </div>
-                        </div>
-                        <div class="loan-amount">R$ ${l.saldoDevedor.toFixed(0)}</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div>
-                    </div>
-                    <div class="loan-stats">
-                        <span>${l.parcelasPagas || 0} de ${l.parcelas} parcelas</span>
-                        <span>Próxima: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toFixed(2)}</span>
-                    </div>
-                </div>
-            `).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo cadastrado</div>';
-        }
-        
-        function renderTx(e) {
-            const isIncome = e.type === 'income';
-            const cat = categories[e.type]?.[e.category] || e.category || '📦 Outros';
-            const emoji = cat.split(' ')[0];
-            const name = cat.split(' ').slice(1).join(' ') || cat;
-            
-            return `
-            <div class="transaction-item" onclick="if(confirm('Excluir este lançamento?')) deleteTransaction(${e.id})">
-                <div class="tx-icon">${emoji}</div>
-                <div class="tx-info">
-                    <div class="tx-title">${e.desc || name}</div>
-                    <div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div>
-                </div>
-                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">
-                    ${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}
-                </div>
-            </div>
-            `;
-        }
-        
-        function deleteTransaction(id) {
-            expenses = expenses.filter(e => e.id !== id);
-            localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-            updateUI();
-            showToast('Lançamento removido');
-        }
-        
-        // ==================== TOAST ====================
-        function showToast(msg) {
-            console.log('Toast:', msg);
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-        
-        // Swipe to close sheets
-        let touchStartY = 0;
-        document.querySelectorAll('.bottom-sheet').forEach(sheet => {
-            sheet.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
-            sheet.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - touchStartY > 100) closeAllSheets();
-            });
-        });
-        
-        // Prevent double-tap zoom on buttons
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('touchend', e => {
-                e.preventDefault();
-                btn.click();
-            });
-        });
-    </script>
-</body>
-</html>
+        input.value = '';
+    };
+    reader.readAsText(file);
+}
+
+function clearAllData() {
+    if (!confirm('⚠️ ATENÇÃO!\n\nIsso apagará TODOS os dados permanentemente.\n\nDigite "APAGAR" para confirmar.')) return;
+    
+    const confirmation = prompt('Digite "APAGAR" para confirmar:');
+    if (confirmation !== 'APAGAR') {
+        showToast('Operação cancelada');
+        return;
+    }
+    
+    expenses = [];
+    banks = [];
+    loans = [];
+    categories = JSON.parse(JSON.stringify(defaultCats));
+    
+    localStorage.removeItem('fc_expenses');
+    localStorage.removeItem('fc_banks');
+    localStorage.removeItem('fc_loans');
+    localStorage.removeItem('fc_cats');
+    
+    updateUI();
+    renderSettings();
+    showView('main-view');
+    showToast('Todos os dados foram apagados');
+}
