@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>FinControl - iPhone</title>
+    <title>FinControl Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,6 +16,7 @@
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
+            --info: #3b82f6;
             --bg-primary: #0f0f1a;
             --bg-secondary: #1a1a2e;
             --bg-card: rgba(255,255,255,0.05);
@@ -58,8 +59,8 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .quick-add-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
-        .quick-add-section h3 { margin-bottom: 15px; font-size: 1rem; color: var(--text-secondary); text-align: center; }
+        .section-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+        .section-card h3 { margin-bottom: 15px; font-size: 1rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; }
         
         .value-display { 
             background: var(--bg-secondary); 
@@ -115,11 +116,20 @@
             padding: 20px 15px; 
             text-align: center; 
             cursor: pointer;
+            position: relative;
         }
         .category-btn:active { transform: scale(0.97); }
         .category-btn .icon { font-size: 2rem; display: block; margin-bottom: 8px; }
         .category-btn .name { font-weight: 600; font-size: 0.9rem; }
         .category-btn.selected { border-color: var(--primary); background: rgba(99,102,241,0.2); }
+        .category-btn .delete-cat { 
+            position: absolute; top: 5px; right: 5px; 
+            background: var(--danger); color: white; 
+            border: none; width: 24px; height: 24px; 
+            border-radius: 50%; font-size: 0.8rem; 
+            cursor: pointer; display: none; 
+        }
+        .category-btn:hover .delete-cat { display: block; }
         
         .add-btn { 
             width: 100%; 
@@ -131,54 +141,160 @@
             font-size: 1.3rem; 
             font-weight: 700;
             cursor: pointer;
+            margin-bottom: 10px;
         }
         .add-btn:active { transform: scale(0.98); }
         .add-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
         
-        .chart-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
-        .chart-container h3 { margin-bottom: 15px; font-size: 1rem; color: var(--text-secondary); }
-        .transaction-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .add-btn.secondary {
+            background: linear-gradient(135deg, var(--info), #2563eb);
+        }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.875rem; color: var(--text-secondary); }
+        .input-group input, .input-group select {
+            width: 100%; padding: 12px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-primary); font-size: 1rem;
+        }
+        
+        .bank-list, .category-list { margin-top: 15px; }
+        .bank-item, .cat-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: var(--bg-secondary);
+            border-radius: var(--radius-sm); margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+        .bank-info { display: flex; align-items: center; gap: 10px; }
+        .bank-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        
+        .installment-info {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .installment-info.active { display: block; }
+        .installment-info h4 { color: var(--warning); margin-bottom: 10px; }
+        
+        .transaction-item { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-sm); 
+            padding: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 10px; 
+        }
         .transaction-info { display: flex; align-items: center; flex: 1; }
-        .transaction-amount { font-weight: 700; font-size: 1.2rem; color: var(--danger); }
+        .transaction-amount { font-weight: 700; font-size: 1.2rem; }
+        .transaction-amount.expense { color: var(--danger); }
+        .transaction-amount.income { color: var(--success); }
+        .installment-badge {
+            background: var(--warning);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
         .filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .filter-btn { padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 0.875rem; font-weight: 500; }
         .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
         .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; }
         .summary-icon { font-size: 1.5rem; margin-bottom: 5px; }
         .summary-label { font-size: 0.75rem; color: var(--text-muted); }
         .summary-value { font-size: 1.1rem; font-weight: 700; }
+        
+        .chart-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+        .chart-container h3 { margin-bottom: 15px; font-size: 1rem; color: var(--text-secondary); }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-secondary); border-radius: var(--radius);
+            width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto;
+            padding: 25px;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.2rem; }
+        .close-modal { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+        
+        .toggle-switch {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 15px;
+        }
+        .switch {
+            position: relative; display: inline-block; width: 50px; height: 26px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg-hover); transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        
         .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--bg-secondary); color: var(--text-primary); padding: 15px 25px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 1px solid var(--border); z-index: 2000; opacity: 0; transition: all 0.3s; font-weight: 500; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        .empty-state { text-align: center; color: var(--text-muted); padding: 40px; }
+        
+        .type-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .type-btn { flex: 1; padding: 15px; border: 2px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; }
+        .type-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.1); }
+        .type-btn.expense.active { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+        .type-btn.income.active { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.1); }
     </style>
 </head>
 <body>
     <div id="app">
         <header class="header">
             <div class="header-content">
-                <h1>💰 FinControl</h1>
+                <h1>💰 FinControl Pro</h1>
                 <button class="icon-btn" onclick="toggleTheme()">🌙</button>
             </div>
             <div class="balance-card">
-                <div style="font-size: 0.875rem; opacity: 0.9;">Total do Mês</div>
+                <div style="font-size: 0.875rem; opacity: 0.9;">Saldo Total</div>
                 <h2 id="total-balance">R$ 0,00</h2>
                 <div class="balance-trend">
-                    <span id="transaction-count">0 transações</span>
-                    <span id="daily-average">Média: R$ 0,00</span>
+                    <span id="income-total">Receitas: R$ 0,00</span>
+                    <span id="expense-total">Despesas: R$ 0,00</span>
                 </div>
             </div>
         </header>
 
         <nav class="tab-nav">
-            <button class="tab-btn active" onclick="showTab('dashboard')">Adicionar</button>
-            <button class="tab-btn" onclick="showTab('transactions')">Lançamentos</button>
+            <button class="tab-btn active" onclick="showTab('dashboard')">Lançar</button>
+            <button class="tab-btn" onclick="showTab('transactions')">Extrato</button>
+            <button class="tab-btn" onclick="showTab('banks')">Bancos</button>
+            <button class="tab-btn" onclick="showTab('categories')">Categorias</button>
             <button class="tab-btn" onclick="showTab('reports')">Relatórios</button>
         </nav>
 
         <main class="main-content">
+            <!-- ABA LANÇAR -->
             <section id="dashboard" class="tab-content active">
-                <div class="quick-add-section">
-                    <h3>📱 Toque nos números</h3>
+                <div class="section-card">
+                    <h3>📱 Novo Lançamento</h3>
+                    
+                    <div class="type-selector">
+                        <button class="type-btn expense active" onclick="setTransactionType('expense')">💸 Despesa</button>
+                        <button class="type-btn income" onclick="setTransactionType('income')">💵 Receita</button>
+                    </div>
                     
                     <div class="value-display" onclick="clearValue()">
                         <span class="currency">R$</span>
@@ -207,35 +323,56 @@
                         <button class="num-btn action" onclick="deleteLast()">⌫</button>
                     </div>
                     
-                    <div class="category-grid">
-                        <button class="category-btn" onclick="selectCategory('food')" data-cat="food">
-                            <span class="icon">🍔</span>
-                            <span class="name">Alimentação</span>
-                        </button>
-                        <button class="category-btn" onclick="selectCategory('transport')" data-cat="transport">
-                            <span class="icon">🚌</span>
-                            <span class="name">Transporte</span>
-                        </button>
-                        <button class="category-btn" onclick="selectCategory('leisure')" data-cat="leisure">
-                            <span class="icon">🎮</span>
-                            <span class="name">Lazer</span>
-                        </button>
-                        <button class="category-btn" onclick="selectCategory('health')" data-cat="health">
-                            <span class="icon">💊</span>
-                            <span class="name">Saúde</span>
-                        </button>
-                        <button class="category-btn" onclick="selectCategory('housing')" data-cat="housing">
-                            <span class="icon">🏠</span>
-                            <span class="name">Moradia</span>
-                        </button>
-                        <button class="category-btn" onclick="selectCategory('shopping')" data-cat="shopping">
-                            <span class="icon">🛍️</span>
-                            <span class="name">Compras</span>
-                        </button>
+                    <div class="input-group">
+                        <label>Descrição (opcional)</label>
+                        <input type="text" id="transaction-desc" placeholder="Ex: Supermercado Extra">
                     </div>
                     
-                    <button id="add-btn" class="add-btn" onclick="addExpense()" disabled>
-                        ➕ ADICIONAR GASTO
+                    <div class="input-group">
+                        <label>Banco/Conta</label>
+                        <select id="bank-select">
+                            <option value="">Selecione um banco...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="toggle-switch">
+                        <label class="switch">
+                            <input type="checkbox" id="installment-toggle" onchange="toggleInstallments()">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Parcelar compra</span>
+                    </div>
+                    
+                    <div class="installment-info" id="installment-box">
+                        <h4>📅 Configurar Parcelas</h4>
+                        <div class="input-group">
+                            <label>Número de Parcelas</label>
+                            <select id="installment-count">
+                                <option value="2">2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                                <option value="7">7x</option>
+                                <option value="8">8x</option>
+                                <option value="9">9x</option>
+                                <option value="10">10x</option>
+                                <option value="11">11x</option>
+                                <option value="12">12x</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Primeiro pagamento</label>
+                            <input type="date" id="installment-date">
+                        </div>
+                    </div>
+                    
+                    <div class="category-grid" id="category-grid">
+                        <!-- Categorias serão carregadas dinamicamente -->
+                    </div>
+                    
+                    <button id="add-btn" class="add-btn" onclick="addTransaction()" disabled>
+                        ➕ ADICIONAR
                     </button>
                 </div>
 
@@ -245,37 +382,114 @@
                 </div>
             </section>
 
+            <!-- ABA EXTRATO -->
             <section id="transactions" class="tab-content">
                 <div class="filters">
                     <button class="filter-btn active" onclick="setFilter('all')">Todos</button>
                     <button class="filter-btn" onclick="setFilter('today')">Hoje</button>
                     <button class="filter-btn" onclick="setFilter('week')">Semana</button>
                     <button class="filter-btn" onclick="setFilter('month')">Mês</button>
+                    <button class="filter-btn" onclick="setFilter('installments')">Parcelas</button>
                 </div>
                 <div id="full-list"></div>
             </section>
 
+            <!-- ABA BANCOS -->
+            <section id="banks" class="tab-content">
+                <div class="section-card">
+                    <h3>🏦 Meus Bancos</h3>
+                    <div class="input-group">
+                        <label>Nome do Banco</label>
+                        <input type="text" id="bank-name" placeholder="Ex: Nubank, Itaú, etc">
+                    </div>
+                    <div class="input-group">
+                        <label>Cor (opcional)</label>
+                        <input type="color" id="bank-color" value="#6366f1" style="height: 50px;">
+                    </div>
+                    <button class="add-btn" onclick="addBank()">➕ Adicionar Banco</button>
+                    
+                    <div class="bank-list" id="bank-list"></div>
+                </div>
+            </section>
+
+            <!-- ABA CATEGORIAS -->
+            <section id="categories" class="tab-content">
+                <div class="section-card">
+                    <h3>🏷️ Categorias de Despesa</h3>
+                    <div class="input-group">
+                        <label>Nome da Categoria</label>
+                        <input type="text" id="expense-cat-name" placeholder="Ex: Academia, Pets, etc">
+                    </div>
+                    <div class="input-group">
+                        <label>Ícone (emoji)</label>
+                        <input type="text" id="expense-cat-icon" placeholder="🏋️ 🐶 🚗" maxlength="2">
+                    </div>
+                    <div class="input-group">
+                        <label>Cor</label>
+                        <input type="color" id="expense-cat-color" value="#ef4444" style="height: 50px;">
+                    </div>
+                    <button class="add-btn" onclick="addCategory('expense')">➕ Adicionar Categoria de Despesa</button>
+                    
+                    <div class="category-list" id="expense-cat-list"></div>
+                </div>
+                
+                <div class="section-card">
+                    <h3>💰 Categorias de Receita</h3>
+                    <div class="input-group">
+                        <label>Nome da Categoria</label>
+                        <input type="text" id="income-cat-name" placeholder="Ex: Freelance, Aluguel, etc">
+                    </div>
+                    <div class="input-group">
+                        <label>Ícone (emoji)</label>
+                        <input type="text" id="income-cat-icon" placeholder="💻 🏠 💼" maxlength="2">
+                    </div>
+                    <div class="input-group">
+                        <label>Cor</label>
+                        <input type="color" id="income-cat-color" value="#10b981" style="height: 50px;">
+                    </div>
+                    <button class="add-btn secondary" onclick="addCategory('income')">➕ Adicionar Categoria de Receita</button>
+                    
+                    <div class="category-list" id="income-cat-list"></div>
+                </div>
+            </section>
+
+            <!-- ABA RELATÓRIOS -->
             <section id="reports" class="tab-content">
                 <div class="chart-container">
-                    <h3>📊 Resumo</h3>
+                    <h3>📊 Resumo do Período</h3>
                     <div class="summary-grid">
                         <div class="summary-card">
                             <div class="summary-icon">💵</div>
-                            <div class="summary-label">Total</div>
-                            <div id="report-total" class="summary-value">R$ 0</div>
+                            <div class="summary-label">Saldo</div>
+                            <div id="report-balance" class="summary-value">R$ 0</div>
                         </div>
                         <div class="summary-card">
                             <div class="summary-icon">📈</div>
-                            <div class="summary-label">Média</div>
+                            <div class="summary-label">Média/Dia</div>
                             <div id="report-average" class="summary-value">R$ 0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">💸</div>
+                            <div class="summary-label">Maior Gasto</div>
+                            <div id="report-max" class="summary-value">R$ 0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">🔄</div>
+                            <div class="summary-label">Transações</div>
+                            <div id="report-count" class="summary-value">0</div>
                         </div>
                     </div>
                     <canvas id="expense-chart"></canvas>
                 </div>
                 
                 <div class="chart-container">
-                    <button onclick="exportData()" style="width: 100%; margin-bottom: 10px;" class="filter-btn">📥 Exportar JSON</button>
-                    <button onclick="clearAll()" style="width: 100%; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid var(--danger);" class="filter-btn">🗑️ Limpar Dados</button>
+                    <h3>🏦 Gastos por Banco</h3>
+                    <canvas id="bank-chart"></canvas>
+                </div>
+                
+                <div class="section-card">
+                    <button onclick="exportData()" style="width: 100%; margin-bottom: 10px;" class="filter-btn">📥 Exportar Dados</button>
+                    <button onclick="clearAll()" style="width: 100%; background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid var(--danger);" class="filter-btn">🗑️ Limpar Todos os Dados</button>
                 </div>
             </section>
         </main>
@@ -284,47 +498,55 @@
     </div>
 
     <script>
-        const categories = {
-            food: { name: 'Alimentação', icon: '🍔', color: '#ef4444' },
-            transport: { name: 'Transporte', icon: '🚌', color: '#3b82f6' },
-            leisure: { name: 'Lazer', icon: '🎮', color: '#8b5cf6' },
-            health: { name: 'Saúde', icon: '💊', color: '#10b981' },
-            housing: { name: 'Moradia', icon: '🏠', color: '#f59e0b' },
-            shopping: { name: 'Compras', icon: '🛍️', color: '#ec4899' },
-            other: { name: 'Outros', icon: '📦', color: '#6b7280' }
+        // Dados padrão
+        const defaultCategories = {
+            expense: {
+                food: { name: 'Alimentação', icon: '🍔', color: '#ef4444' },
+                transport: { name: 'Transporte', icon: '🚌', color: '#3b82f6' },
+                leisure: { name: 'Lazer', icon: '🎮', color: '#8b5cf6' },
+                health: { name: 'Saúde', icon: '💊', color: '#10b981' },
+                housing: { name: 'Moradia', icon: '🏠', color: '#f59e0b' },
+                shopping: { name: 'Compras', icon: '🛍️', color: '#ec4899' }
+            },
+            income: {
+                salary: { name: 'Salário', icon: '💰', color: '#10b981' },
+                freelance: { name: 'Freelance', icon: '💻', color: '#3b82f6' },
+                investment: { name: 'Investimentos', icon: '📈', color: '#8b5cf6' },
+                gift: { name: 'Presente', icon: '🎁', color: '#ec4899' }
+            }
         };
 
+        // Estado da aplicação
         let expenses = JSON.parse(localStorage.getItem('fincontrol_expenses') || '[]');
+        let banks = JSON.parse(localStorage.getItem('fincontrol_banks') || '[]');
+        let categories = JSON.parse(localStorage.getItem('fincontrol_categories') || JSON.stringify(defaultCategories));
         let currentValue = 0;
         let selectedCategory = null;
+        let transactionType = 'expense';
         let chartInstance = null;
+        let bankChartInstance = null;
         let currentFilter = 'all';
 
-        function updateDisplay() {
-            document.getElementById('current-value').textContent = currentValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('add-btn').disabled = !selectedCategory || currentValue <= 0;
-        }
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Define data padrão para parcelas
+            document.getElementById('installment-date').valueAsDate = new Date();
+            updateBankSelect();
+            renderCategories();
+            renderBanks();
+            updateDashboard();
+        });
 
-        // FUNÇÃO CORRIGIDA - Agora aceita múltiplos zeros!
+        // Funções do Teclado Numérico
         function appendNumber(num) {
-            // Ignora zeros à esquerda quando valor é zero (exceto se for o único dígito)
             if (currentValue === 0 && num === 0) return;
-            
-            // Converte para centavos (inteiro) para evitar erro de ponto flutuante
             let cents = Math.round(currentValue * 100);
-            
             if (cents === 0) {
-                // Se está zerado, começa com o número digitado
                 cents = num;
             } else {
-                // Adiciona o dígito à direita: 25 vira 250
                 cents = (cents * 10) + num;
             }
-            
-            // Converte de volta para reais
             const newValue = cents / 100;
-            
-            // Limite de R$ 99.999,99
             if (newValue < 100000) {
                 currentValue = newValue;
                 updateDisplay();
@@ -336,10 +558,9 @@
             updateDisplay();
         }
 
-        // FUNÇÃO CORRIGIDA - Apaga último dígito corretamente
         function deleteLast() {
             let cents = Math.round(currentValue * 100);
-            cents = Math.floor(cents / 10); // Remove último dígito
+            cents = Math.floor(cents / 10);
             currentValue = cents / 100;
             updateDisplay();
         }
@@ -347,6 +568,37 @@
         function clearValue() {
             currentValue = 0;
             updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('current-value').textContent = currentValue.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2
+            });
+            document.getElementById('add-btn').disabled = !selectedCategory || currentValue <= 0;
+        }
+
+        // Tipos de Transação
+        function setTransactionType(type) {
+            transactionType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderCategories();
+            selectedCategory = null;
+            updateDisplay();
+        }
+
+        // Categorias
+        function renderCategories() {
+            const grid = document.getElementById('category-grid');
+            const cats = categories[transactionType] || {};
+            
+            grid.innerHTML = Object.entries(cats).map(([id, cat]) => `
+                <button class="category-btn" onclick="selectCategory('${id}')" data-cat="${id}">
+                    <span class="icon">${cat.icon}</span>
+                    <span class="name">${cat.name}</span>
+                </button>
+            `).join('');
         }
 
         function selectCategory(cat) {
@@ -357,93 +609,355 @@
             updateDisplay();
         }
 
-        function addExpense() {
-            if (!selectedCategory || currentValue <= 0) return;
+        function addCategory(type) {
+            const nameInput = document.getElementById(`${type}-cat-name`);
+            const iconInput = document.getElementById(`${type}-cat-icon`);
+            const colorInput = document.getElementById(`${type}-cat-color`);
             
-            const expense = {
-                id: Date.now(),
-                value: currentValue,
-                category: selectedCategory,
-                date: new Date().toISOString().split('T')[0],
-                timestamp: Date.now()
+            const name = nameInput.value.trim();
+            const icon = iconInput.value.trim() || (type === 'expense' ? '📦' : '💵');
+            const color = colorInput.value;
+            
+            if (!name) {
+                showToast('Digite um nome para a categoria');
+                return;
+            }
+            
+            const id = 'cat_' + Date.now();
+            if (!categories[type]) categories[type] = {};
+            categories[type][id] = { name, icon, color };
+            
+            localStorage.setItem('fincontrol_categories', JSON.stringify(categories));
+            
+            nameInput.value = '';
+            iconInput.value = '';
+            renderCategories();
+            renderCategoryLists();
+            showToast('Categoria adicionada!');
+        }
+
+        function deleteCategory(type, id) {
+            if (confirm('Excluir esta categoria?')) {
+                delete categories[type][id];
+                localStorage.setItem('fincontrol_categories', JSON.stringify(categories));
+                renderCategories();
+                renderCategoryLists();
+                showToast('Categoria removida');
+            }
+        }
+
+        function renderCategoryLists() {
+            // Lista de despesas
+            const expenseList = document.getElementById('expense-cat-list');
+            expenseList.innerHTML = Object.entries(categories.expense || {}).map(([id, cat]) => `
+                <div class="cat-item">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">${cat.icon}</span>
+                        <div>
+                            <div style="font-weight: 600;">${cat.name}</div>
+                            <div style="width: 20px; height: 4px; background: ${cat.color}; border-radius: 2px; margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    <button onclick="deleteCategory('expense', '${id}')" style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Excluir</button>
+                </div>
+            `).join('');
+            
+            // Lista de receitas
+            const incomeList = document.getElementById('income-cat-list');
+            incomeList.innerHTML = Object.entries(categories.income || {}).map(([id, cat]) => `
+                <div class="cat-item">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem;">${cat.icon}</span>
+                        <div>
+                            <div style="font-weight: 600;">${cat.name}</div>
+                            <div style="width: 20px; height: 4px; background: ${cat.color}; border-radius: 2px; margin-top: 4px;"></div>
+                        </div>
+                    </div>
+                    <button onclick="deleteCategory('income', '${id}')" style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Excluir</button>
+                </div>
+            `).join('');
+        }
+
+        // Bancos
+        function addBank() {
+            const nameInput = document.getElementById('bank-name');
+            const colorInput = document.getElementById('bank-color');
+            
+            const name = nameInput.value.trim();
+            const color = colorInput.value;
+            
+            if (!name) {
+                showToast('Digite o nome do banco');
+                return;
+            }
+            
+            const bank = {
+                id: 'bank_' + Date.now(),
+                name,
+                color,
+                balance: 0
             };
             
-            expenses.push(expense);
+            banks.push(bank);
+            localStorage.setItem('fincontrol_banks', JSON.stringify(banks));
+            
+            nameInput.value = '';
+            renderBanks();
+            updateBankSelect();
+            showToast('Banco adicionado!');
+        }
+
+        function deleteBank(id) {
+            if (confirm('Excluir este banco?')) {
+                banks = banks.filter(b => b.id !== id);
+                localStorage.setItem('fincontrol_banks', JSON.stringify(banks));
+                renderBanks();
+                updateBankSelect();
+                showToast('Banco removido');
+            }
+        }
+
+        function renderBanks() {
+            const list = document.getElementById('bank-list');
+            if (banks.length === 0) {
+                list.innerHTML = '<div class="empty-state">Nenhum banco cadastrado</div>';
+                return;
+            }
+            
+            // Calcula saldo por banco
+            const bankBalances = {};
+            expenses.forEach(e => {
+                if (e.bankId) {
+                    if (!bankBalances[e.bankId]) bankBalances[e.bankId] = 0;
+                    bankBalances[e.bankId] += e.type === 'income' ? e.value : -e.value;
+                }
+            });
+            
+            list.innerHTML = banks.map(bank => {
+                const balance = bankBalances[bank.id] || 0;
+                return `
+                    <div class="bank-item">
+                        <div class="bank-info">
+                            <div class="bank-icon" style="background: ${bank.color}20; color: ${bank.color};">
+                                🏦
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${bank.name}</div>
+                                <div style="font-size: 0.875rem; color: ${balance >= 0 ? 'var(--success)' : 'var(--danger)'};">
+                                    Saldo: R$ ${balance.toFixed(2)}
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteBank('${bank.id}')" style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Excluir</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBankSelect() {
+            const select = document.getElementById('bank-select');
+            select.innerHTML = '<option value="">Selecione um banco...</option>' +
+                banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        }
+
+        // Parcelas
+        function toggleInstallments() {
+            const box = document.getElementById('installment-box');
+            const isChecked = document.getElementById('installment-toggle').checked;
+            box.classList.toggle('active', isChecked);
+        }
+
+        // Adicionar Transação
+        function addTransaction() {
+            if (!selectedCategory || currentValue <= 0) return;
+            
+            const desc = document.getElementById('transaction-desc').value.trim();
+            const bankId = document.getElementById('bank-select').value;
+            const isInstallment = document.getElementById('installment-toggle').checked;
+            
+            if (isInstallment && transactionType === 'expense') {
+                // Cria parcelas
+                const count = parseInt(document.getElementById('installment-count').value);
+                const firstDate = document.getElementById('installment-date').value;
+                const installmentValue = currentValue / count;
+                
+                const groupId = 'inst_' + Date.now();
+                
+                for (let i = 0; i < count; i++) {
+                    const date = new Date(firstDate);
+                    date.setMonth(date.getMonth() + i);
+                    
+                    const expense = {
+                        id: Date.now() + i,
+                        value: installmentValue,
+                        category: selectedCategory,
+                        type: transactionType,
+                        date: date.toISOString().split('T')[0],
+                        timestamp: Date.now(),
+                        description: desc || categories[transactionType][selectedCategory].name,
+                        bankId: bankId,
+                        installment: {
+                            groupId: groupId,
+                            current: i + 1,
+                            total: count,
+                            originalValue: currentValue
+                        }
+                    };
+                    expenses.push(expense);
+                }
+                
+                showToast(`✅ ${count}x de R$ ${installmentValue.toFixed(2)} adicionadas!`);
+            } else {
+                // Transação normal
+                const expense = {
+                    id: Date.now(),
+                    value: currentValue,
+                    category: selectedCategory,
+                    type: transactionType,
+                    date: new Date().toISOString().split('T')[0],
+                    timestamp: Date.now(),
+                    description: desc || categories[transactionType][selectedCategory].name,
+                    bankId: bankId
+                };
+                expenses.push(expense);
+                
+                const icon = categories[transactionType][selectedCategory].icon;
+                showToast(`✅ ${icon} R$ ${currentValue.toFixed(2)} adicionado!`);
+            }
+            
             expenses.sort((a, b) => b.timestamp - a.timestamp);
             localStorage.setItem('fincontrol_expenses', JSON.stringify(expenses));
             
+            // Reset
             currentValue = 0;
             selectedCategory = null;
+            document.getElementById('transaction-desc').value = '';
+            document.getElementById('bank-select').value = '';
+            document.getElementById('installment-toggle').checked = false;
+            document.getElementById('installment-box').classList.remove('active');
             document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('selected'));
             updateDisplay();
             updateDashboard();
-            
-            showToast(`✅ ${categories[expense.category].icon} R$ ${expense.value.toFixed(2)} adicionado!`);
         }
 
+        // Dashboard e Listagens
         function updateDashboard() {
             const now = new Date();
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            const monthExpenses = expenses.filter(e => new Date(e.date) >= monthStart);
-            const total = monthExpenses.reduce((sum, e) => sum + e.value, 0);
             
-            document.getElementById('total-balance').textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('transaction-count').textContent = `${monthExpenses.length} transações`;
-            document.getElementById('daily-average').textContent = `Média: R$ ${(total / Math.max(1, now.getDate())).toFixed(2)}`;
+            // Calcula totais
+            const monthTransactions = expenses.filter(e => new Date(e.date) >= monthStart);
+            const income = monthTransactions.filter(e => e.type === 'income').reduce((sum, e) => sum + e.value, 0);
+            const expense = monthTransactions.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
+            const balance = income - expense;
             
+            document.getElementById('total-balance').textContent = `R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total-balance').style.color = balance >= 0 ? 'white' : 'var(--danger)';
+            document.getElementById('income-total').textContent = `Receitas: R$ ${income.toFixed(2)}`;
+            document.getElementById('expense-total').textContent = `Despesas: R$ ${expense.toFixed(2)}`;
+            
+            // Últimos lançamentos
             const recent = expenses.slice(0, 5);
             const container = document.getElementById('recent-list');
             if (recent.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum gasto ainda</div>';
+                container.innerHTML = '<div class="empty-state">Nenhum lançamento ainda</div>';
             } else {
                 container.innerHTML = recent.map(e => createItemHTML(e)).join('');
             }
             
-            updateChart(monthExpenses);
+            updateCharts(monthTransactions);
         }
 
         function createItemHTML(e) {
-            const cat = categories[e.category];
+            const cat = categories[e.type]?.[e.category] || categories.expense[e.category] || { name: 'Desconhecido', icon: '📦', color: '#666' };
+            const isInstallment = e.installment;
+            const installmentBadge = isInstallment ? `<span class="installment-badge">${e.installment.current}/${e.installment.total}</span>` : '';
+            
             return `
                 <div class="transaction-item" onclick="deleteExpense(${e.id})">
                     <div class="transaction-info">
                         <div style="font-size: 1.5rem; margin-right: 12px;">${cat.icon}</div>
                         <div>
-                            <div style="font-weight: 600;">${cat.name}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">${new Date(e.date).toLocaleDateString('pt-BR')}</div>
+                            <div style="font-weight: 600;">${e.description || cat.name} ${installmentBadge}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                ${new Date(e.date).toLocaleDateString('pt-BR')}
+                                ${e.bankId ? ' • ' + (banks.find(b => b.id === e.bankId)?.name || 'Banco') : ''}
+                            </div>
                         </div>
                     </div>
-                    <div class="transaction-amount">-R$ ${e.value.toFixed(2)}</div>
+                    <div class="transaction-amount ${e.type}">
+                        ${e.type === 'income' ? '+' : '-'}R$ ${e.value.toFixed(2)}
+                    </div>
                 </div>
             `;
         }
 
-        function updateChart(monthExpenses) {
+        function updateCharts(monthTransactions) {
+            // Gráfico de categorias
             const ctx = document.getElementById('expense-chart')?.getContext('2d');
             if (!ctx) return;
             
             const byCat = {};
-            monthExpenses.forEach(e => byCat[e.category] = (byCat[e.category] || 0) + e.value);
+            monthTransactions.filter(e => e.type === 'expense').forEach(e => {
+                byCat[e.category] = (byCat[e.category] || 0) + e.value;
+            });
             
             if (chartInstance) chartInstance.destroy();
             
-            const labels = Object.keys(byCat).map(id => categories[id]?.name);
+            const labels = Object.keys(byCat).map(id => categories.expense[id]?.name || 'Outros');
             const data = Object.values(byCat);
-            const colors = Object.keys(byCat).map(id => categories[id]?.color);
+            const colors = Object.keys(byCat).map(id => categories.expense[id]?.color || '#666');
             
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+            if (data.length > 0) {
+                chartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+                });
+            }
+            
+            // Gráfico por banco
+            const bankCtx = document.getElementById('bank-chart')?.getContext('2d');
+            if (!bankCtx) return;
+            
+            const byBank = {};
+            monthTransactions.filter(e => e.type === 'expense' && e.bankId).forEach(e => {
+                byBank[e.bankId] = (byBank[e.bankId] || 0) + e.value;
             });
+            
+            if (bankChartInstance) bankChartInstance.destroy();
+            
+            const bankLabels = Object.keys(byBank).map(id => banks.find(b => b.id === id)?.name || 'Desconhecido');
+            const bankData = Object.values(byBank);
+            const bankColors = Object.keys(byBank).map(id => banks.find(b => b.id === id)?.color || '#666');
+            
+            if (bankData.length > 0) {
+                bankChartInstance = new Chart(bankCtx, {
+                    type: 'bar',
+                    data: { 
+                        labels: bankLabels, 
+                        datasets: [{ 
+                            label: 'Gastos', 
+                            data: bankData, 
+                            backgroundColor: bankColors,
+                            borderRadius: 5
+                        }] 
+                    },
+                    options: { responsive: true, plugins: { legend: { display: false } } }
+                });
+            }
         }
 
+        // Navegação
         function showTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.classList.add('active');
             document.getElementById(tab).classList.add('active');
+            
             if (tab === 'transactions') renderTransactions();
+            if (tab === 'banks') renderBanks();
+            if (tab === 'categories') renderCategoryLists();
             if (tab === 'reports') updateReports();
         }
 
@@ -457,51 +971,80 @@
         function renderTransactions() {
             const now = new Date();
             let filtered = expenses;
-            if (currentFilter === 'today') filtered = expenses.filter(e => e.date === now.toISOString().split('T')[0]);
-            else if (currentFilter === 'week') filtered = expenses.filter(e => new Date(e.date) >= new Date(now - 7*24*60*60*1000));
-            else if (currentFilter === 'month') filtered = expenses.filter(e => new Date(e.date) >= new Date(now.getFullYear(), now.getMonth(), 1));
+            
+            if (currentFilter === 'today') {
+                filtered = expenses.filter(e => e.date === now.toISOString().split('T')[0]);
+            } else if (currentFilter === 'week') {
+                const weekAgo = new Date(now - 7*24*60*60*1000);
+                filtered = expenses.filter(e => new Date(e.date) >= weekAgo);
+            } else if (currentFilter === 'month') {
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                filtered = expenses.filter(e => new Date(e.date) >= monthStart);
+            } else if (currentFilter === 'installments') {
+                filtered = expenses.filter(e => e.installment);
+            }
             
             const container = document.getElementById('full-list');
             container.innerHTML = filtered.length === 0 
-                ? '<div style="text-align: center; color: var(--text-muted); padding: 40px;">Nenhum gasto</div>'
+                ? '<div class="empty-state">Nenhum lançamento encontrado</div>'
                 : filtered.map(e => createItemHTML(e)).join('');
         }
 
         function deleteExpense(id) {
-            if (confirm('Excluir este gasto?')) {
-                expenses = expenses.filter(e => e.id !== id);
+            if (confirm('Excluir este lançamento?')) {
+                const expense = expenses.find(e => e.id === id);
+                
+                // Se for parcela, pergunta se quer excluir todas
+                if (expense?.installment && confirm('Esta é uma parcela. Deseja excluir TODAS as parcelas desta compra?')) {
+                    expenses = expenses.filter(e => e.installment?.groupId !== expense.installment.groupId);
+                } else {
+                    expenses = expenses.filter(e => e.id !== id);
+                }
+                
                 localStorage.setItem('fincontrol_expenses', JSON.stringify(expenses));
                 updateDashboard();
                 renderTransactions();
-                showToast('Gasto removido');
+                showToast('Lançamento removido');
             }
         }
 
         function updateReports() {
-            const total = expenses.reduce((sum, e) => sum + e.value, 0);
-            document.getElementById('report-total').textContent = `R$ ${total.toFixed(0)}`;
-            const avg = expenses.length > 0 ? total / expenses.length : 0;
-            document.getElementById('report-average').textContent = `R$ ${avg.toFixed(0)}`;
+            const total = expenses.reduce((sum, e) => sum + (e.type === 'income' ? e.value : -e.value), 0);
+            const expenseTotal = expenses.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
+            const maxExpense = Math.max(...expenses.filter(e => e.type === 'expense').map(e => e.value), 0);
+            
+            document.getElementById('report-balance').textContent = `R$ ${total.toFixed(0)}`;
+            document.getElementById('report-balance').style.color = total >= 0 ? 'var(--success)' : 'var(--danger)';
+            document.getElementById('report-average').textContent = `R$ ${expenses.length > 0 ? (expenseTotal / 30).toFixed(0) : 0}`;
+            document.getElementById('report-max').textContent = `R$ ${maxExpense.toFixed(0)}`;
+            document.getElementById('report-count').textContent = expenses.length;
         }
 
         function exportData() {
-            const data = { expenses, date: new Date().toISOString() };
+            const data = { expenses, banks, categories, date: new Date().toISOString() };
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `fincontrol-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `fincontrol-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             showToast('Backup exportado!');
         }
 
         function clearAll() {
             if (confirm('⚠️ Apagar TODOS os dados?')) {
-                if (confirm('Tem certeza?')) {
+                if (confirm('Tem certeza? Esta ação não pode ser desfeita!')) {
                     expenses = [];
+                    banks = [];
+                    categories = JSON.parse(JSON.stringify(defaultCategories));
                     localStorage.removeItem('fincontrol_expenses');
+                    localStorage.removeItem('fincontrol_banks');
+                    localStorage.removeItem('fincontrol_categories');
                     updateDashboard();
-                    showToast('Dados apagados');
+                    renderBanks();
+                    renderCategories();
+                    renderCategoryLists();
+                    showToast('Todos os dados foram apagados');
                 }
             }
         }
@@ -519,9 +1062,6 @@
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
-        updateDisplay();
-        updateDashboard();
     </script>
 </body>
 </html>
