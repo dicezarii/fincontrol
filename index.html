@@ -80,7 +80,6 @@
         
         .hidden { display: none !important; }
         
-        /* BALANCE CARD */
         .balance-card {
             background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.1) 100%);
             border: 1px solid rgba(99,102,241,0.2);
@@ -109,7 +108,6 @@
             color: var(--text-secondary);
         }
         
-        /* QUICK ACTIONS */
         .quick-actions {
             display: flex;
             gap: 12px;
@@ -139,7 +137,6 @@
         .quick-btn.expense { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--danger); }
         .quick-btn.calc { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--info); }
         
-        /* SECTIONS */
         .section { margin-bottom: 24px; }
         
         .section-header {
@@ -160,7 +157,6 @@
             cursor: pointer;
         }
         
-        /* TRANSACTION LIST */
         .transaction-list {
             display: flex;
             flex-direction: column;
@@ -198,7 +194,6 @@
         .tx-amount.income { color: var(--success); }
         .tx-amount.expense { color: var(--danger); }
         
-        /* LOAN CARDS */
         .loan-card {
             background: var(--surface);
             border-radius: var(--radius-sm);
@@ -242,7 +237,6 @@
             color: var(--text-muted);
         }
         
-        /* BOTTOM SHEET */
         .bottom-sheet {
             position: fixed;
             bottom: 0;
@@ -301,7 +295,6 @@
         
         .sheet-content { padding: 0 20px 40px; }
         
-        /* INPUTS */
         .input-group {
             margin-bottom: 20px;
         }
@@ -336,7 +329,6 @@
             color: var(--primary);
         }
         
-        /* KEYPAD */
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -363,7 +355,6 @@
         .key.action { background: var(--danger); }
         .key.wide { grid-column: span 2; aspect-ratio: 2.4; }
         
-        /* CATEGORY GRID */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -393,7 +384,6 @@
         .cat-emoji { font-size: 1.8rem; }
         .cat-name { font-size: 0.75rem; color: var(--text-secondary); }
         
-        /* BUTTONS */
         .btn-primary {
             width: 100%;
             padding: 18px;
@@ -423,7 +413,6 @@
             margin-top: 12px;
         }
         
-        /* CALCULATOR */
         .calc-display {
             background: var(--bg);
             padding: 16px;
@@ -440,38 +429,38 @@
         }
         
         .calc-result { 
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700; 
             color: var(--info); 
         }
         
+        /* CALCULADORA CORRIGIDA - MAIS COMPACTA */
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
         
         .calc-btn {
-            aspect-ratio: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             background: var(--surface-light);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            height: 60px;
+            height: 48px;
+            padding: 0;
         }
         
         .calc-btn:active { background: var(--primary); }
-        .calc-btn.op { background: var(--warning); color: white; }
+        .calc-btn.op { background: var(--warning); color: white; font-size: 1rem; }
         .calc-btn.eq { background: var(--success); color: white; }
-        .calc-btn.wide { grid-column: span 2; aspect-ratio: 2; }
+        .calc-btn.wide { grid-column: span 2; }
         
-        /* LOAN DETAIL */
         .installment-table {
             width: 100%;
             border-collapse: collapse;
@@ -520,7 +509,6 @@
             background: rgba(99,102,241,0.1);
         }
         
-        /* TOAST */
         .toast {
             position: fixed;
             bottom: 100px;
@@ -544,7 +532,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Settings specific styles */
         .settings-card {
             background: var(--surface);
             border-radius: var(--radius-sm);
@@ -579,6 +566,7 @@
             border-radius: 12px;
             margin-bottom: 8px;
             border-left: 4px solid var(--primary);
+            cursor: pointer;
         }
 
         .bank-info h4 {
@@ -607,9 +595,7 @@
     </style>
 </head>
 <body>
-    <!-- MAIN VIEW (HOME) -->
     <div class="main-content" id="main-view">
-        <!-- BALANCE CARD -->
         <div class="balance-card">
             <div class="balance-label">Saldo Total</div>
             <div class="balance-value" id="total-balance">R$ 0,00</div>
@@ -620,7 +606,6 @@
             </div>
         </div>
         
-        <!-- QUICK ACTIONS -->
         <div class="quick-actions">
             <button class="quick-btn expense" onclick="openTransactionSheet('expense')">
                 <span>💸</span> Despesa
@@ -633,118 +618,89 @@
             </button>
         </div>
         
-        <!-- TRANSACTIONS SECTION -->
         <div class="section">
             <div class="section-header">
                 <span class="section-title">Últimos Lançamentos</span>
                 <span class="see-all" onclick="showAllTransactions()">Ver todos</span>
             </div>
-            <div class="transaction-list" id="recent-list">
-                <!-- Populated by JS -->
-            </div>
+            <div class="transaction-list" id="recent-list"></div>
         </div>
         
-        <!-- LOANS SECTION -->
         <div class="section">
             <div class="section-header">
-                <span class="section-title">Empréstimos e Financiamentos</span>
+                <span class="section-title">Empréstimos</span>
                 <span class="see-all" onclick="openSheet('loan-sheet')">+ Novo</span>
             </div>
-            <div id="loans-list">
-                <!-- Populated by JS -->
-            </div>
+            <div id="loans-list"></div>
         </div>
     </div>
     
-    <!-- ALL TRANSACTIONS VIEW -->
     <div class="main-content hidden" id="all-transactions-view">
         <div class="section-header" style="margin-bottom: 20px;">
             <button class="quick-btn" onclick="showView('main-view')" style="padding: 8px 16px;">← Voltar</button>
-            <span class="section-title">Todos os Lançamentos</span>
+            <span class="section-title">Todos Lançamentos</span>
         </div>
         <div class="transaction-list" id="full-transactions-list"></div>
     </div>
 
-    <!-- SETTINGS VIEW -->
     <div class="main-content hidden" id="settings-view">
         <div style="margin-bottom: 24px;">
             <h1 style="font-size: 1.5rem; font-weight: 700;">Configurações</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Gerencie bancos, categorias e dados</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Gerencie bancos e categorias</p>
         </div>
 
-        <!-- Bancos -->
         <div class="section">
             <div class="section-header">
-                <span class="section-title">🏦 Bancos e Contas</span>
+                <span class="section-title">🏦 Bancos</span>
                 <span class="see-all" onclick="openBankSheet()">+ Adicionar</span>
             </div>
             <div id="banks-list-settings">
-                <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.9rem;">
-                    Nenhum banco cadastrado
-                </div>
+                <div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum banco cadastrado</div>
             </div>
         </div>
 
-        <!-- Categorias -->
         <div class="section">
             <div class="section-header">
                 <span class="section-title">🏷️ Categorias</span>
             </div>
             <div class="settings-card">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; font-weight: 600;">Despesas</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">DESPESAS</div>
                 <div id="expense-cats-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                 <button class="quick-btn" onclick="openCategorySheet('expense')" style="margin-top: 12px; width: 100%; justify-content: center;">
-                    <span>+</span> Nova Categoria Despesa
+                    <span>+</span> Nova
                 </button>
             </div>
             
             <div class="settings-card">
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; font-weight: 600;">Receitas</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">RECEITAS</div>
                 <div id="income-cats-list" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                 <button class="quick-btn" onclick="openCategorySheet('income')" style="margin-top: 12px; width: 100%; justify-content: center;">
-                    <span>+</span> Nova Categoria Receita
+                    <span>+</span> Nova
                 </button>
             </div>
         </div>
 
-        <!-- Dados -->
         <div class="section">
             <div class="section-header">
-                <span class="section-title">💾 Dados e Backup</span>
+                <span class="section-title">💾 Backup</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button class="quick-btn" onclick="exportData()" style="width: 100%; justify-content: flex-start;">
-                    <span>📤</span> Exportar Backup (JSON)
+                    <span>📤</span> Exportar
                 </button>
                 <button class="quick-btn" onclick="document.getElementById('import-file').click()" style="width: 100%; justify-content: flex-start;">
-                    <span>📥</span> Importar Dados
+                    <span>📥</span> Importar
                 </button>
                 <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(this)">
-                <button class="quick-btn" onclick="clearAllData()" style="width: 100%; justify-content: flex-start; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--danger);">
-                    <span>🗑️</span> Limpar Todos os Dados
+                <button class="quick-btn" onclick="clearAllData()" style="width: 100%; justify-content: flex-start; background: rgba(239,68,68,0.1); color: var(--danger);">
+                    <span>🗑️</span> Limpar Tudo
                 </button>
-            </div>
-        </div>
-
-        <!-- Sobre -->
-        <div class="section">
-            <div class="section-header">
-                <span class="section-title">ℹ️ Sobre</span>
-            </div>
-            <div class="settings-card" style="text-align: center;">
-                <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 4px;">FinControl</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">Versão 1.0</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
-                    Controle financeiro pessoal simples e eficiente
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- BOTTOM SHEET OVERLAY -->
     <div class="sheet-overlay" onclick="closeAllSheets()"></div>
     
-    <!-- TRANSACTION SHEET -->
     <div class="bottom-sheet" id="transaction-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
@@ -781,16 +737,14 @@
             </div>
             
             <div class="input-group" id="installment-group">
-                <label class="input-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <label class="input-label" style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="tx-installment" onchange="toggleInstallment()">
-                    Parcelar compra
+                    Parcelar
                 </label>
                 <div id="installment-options" style="display: none; margin-top: 12px;">
                     <select class="input-field" id="tx-parcelas" style="margin-bottom: 8px;">
                         <option value="2">2x</option>
                         <option value="3">3x</option>
-                        <option value="4">4x</option>
-                        <option value="5">5x</option>
                         <option value="6">6x</option>
                         <option value="12">12x</option>
                     </select>
@@ -803,13 +757,10 @@
                 <div class="category-grid" id="tx-categories"></div>
             </div>
             
-            <button class="btn-primary" id="save-tx-btn" onclick="saveTransaction()" disabled>
-                Confirmar
-            </button>
+            <button class="btn-primary" id="save-tx-btn" onclick="saveTransaction()" disabled>Confirmar</button>
         </div>
     </div>
     
-    <!-- CALCULATOR SHEET -->
     <div class="bottom-sheet" id="calc-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
@@ -826,93 +777,72 @@
                 <button class="calc-btn" onclick="calcBack()">⌫</button>
                 <button class="calc-btn op" onclick="calcOp('/')">÷</button>
                 <button class="calc-btn op" onclick="calcOp('*')">×</button>
-                
                 <button class="calc-btn" onclick="calcNum(7)">7</button>
                 <button class="calc-btn" onclick="calcNum(8)">8</button>
                 <button class="calc-btn" onclick="calcNum(9)">9</button>
                 <button class="calc-btn op" onclick="calcOp('-')">−</button>
-                
                 <button class="calc-btn" onclick="calcNum(4)">4</button>
                 <button class="calc-btn" onclick="calcNum(5)">5</button>
                 <button class="calc-btn" onclick="calcNum(6)">6</button>
                 <button class="calc-btn op" onclick="calcOp('+')">+</button>
-                
                 <button class="calc-btn" onclick="calcNum(1)">1</button>
                 <button class="calc-btn" onclick="calcNum(2)">2</button>
                 <button class="calc-btn" onclick="calcNum(3)">3</button>
                 <button class="calc-btn eq" onclick="calcEqual()">=</button>
-                
                 <button class="calc-btn wide" onclick="calcNum(0)">0</button>
                 <button class="calc-btn" onclick="calcNum('.')">.</button>
             </div>
-            <button class="btn-primary" onclick="useCalcResult()" style="margin-top: 16px;">
-                Usar Resultado
-            </button>
+            <button class="btn-primary" onclick="useCalcResult()" style="margin-top: 16px;">Usar</button>
         </div>
     </div>
     
-    <!-- LOAN SHEET -->
     <div class="bottom-sheet" id="loan-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
-            <h3>Novo Empréstimo/Financiamento</h3>
+            <h3>Novo Empréstimo</h3>
             <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
         <div class="sheet-content">
             <div class="input-group">
                 <label class="input-label">Descrição</label>
-                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Financiamento Carro">
+                <input type="text" class="input-field" id="loan-desc" placeholder="Ex: Carro">
             </div>
-            
             <div class="input-group">
-                <label class="input-label">Valor Financiado (R$)</label>
+                <label class="input-label">Valor (R$)</label>
                 <input type="number" class="input-field" id="loan-value" placeholder="50000" step="0.01">
             </div>
-            
             <div class="input-group">
-                <label class="input-label">Taxa de Juros Mensal (%)</label>
+                <label class="input-label">Taxa Mensal (%)</label>
                 <input type="number" class="input-field" id="loan-rate" placeholder="1.5" step="0.01">
             </div>
-            
             <div class="input-group">
-                <label class="input-label">Número de Parcelas</label>
+                <label class="input-label">Parcelas</label>
                 <input type="number" class="input-field" id="loan-months" placeholder="48" min="1">
             </div>
-            
             <div class="input-group">
-                <label class="input-label">Sistema de Amortização</label>
+                <label class="input-label">Sistema</label>
                 <div class="amortization-tabs">
-                    <div class="amortization-tab active" onclick="selectAmortization('price')" id="tab-price">
-                        PRICE<br><small style="font-size: 0.75rem; font-weight: 400;">Parcelas Fixas</small>
-                    </div>
-                    <div class="amortization-tab" onclick="selectAmortization('sac')" id="tab-sac">
-                        SAC<br><small style="font-size: 0.75rem; font-weight: 400;">Decrescentes</small>
-                    </div>
+                    <div class="amortization-tab active" onclick="selectAmortization('price')" id="tab-price">PRICE</div>
+                    <div class="amortization-tab" onclick="selectAmortization('sac')" id="tab-sac">SAC</div>
                 </div>
             </div>
-            
             <div class="input-group">
-                <label class="input-label">Data da Primeira Parcela</label>
+                <label class="input-label">Primeira Parcela</label>
                 <input type="date" class="input-field" id="loan-start-date">
             </div>
-            
-            <button class="btn-primary" onclick="saveLoan()">Simular e Salvar</button>
+            <button class="btn-primary" onclick="saveLoan()">Salvar</button>
         </div>
     </div>
     
-    <!-- LOAN DETAIL SHEET -->
     <div class="bottom-sheet" id="loan-detail-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
-            <h3>Detalhes do Financiamento</h3>
+            <h3>Detalhes</h3>
             <button onclick="closeAllSheets()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
         </div>
-        <div class="sheet-content" id="loan-detail-content">
-            <!-- Populated by JS -->
-        </div>
+        <div class="sheet-content" id="loan-detail-content"></div>
     </div>
 
-    <!-- BANK SHEET -->
     <div class="bottom-sheet" id="bank-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
@@ -921,11 +851,11 @@
         </div>
         <div class="sheet-content">
             <div class="input-group">
-                <label class="input-label">Nome do Banco</label>
-                <input type="text" class="input-field" id="bank-name" placeholder="Ex: Nubank, Itaú, etc">
+                <label class="input-label">Nome</label>
+                <input type="text" class="input-field" id="bank-name" placeholder="Ex: Nubank">
             </div>
             <div class="input-group">
-                <label class="input-label">Saldo Inicial (R$)</label>
+                <label class="input-label">Saldo Inicial</label>
                 <input type="number" class="input-field" id="bank-initial" placeholder="0,00" step="0.01">
             </div>
             <div class="input-group">
@@ -936,19 +866,13 @@
                     <option value="#3b82f6">💙 Azul</option>
                     <option value="#f59e0b">🧡 Laranja</option>
                     <option value="#ef4444">❤️ Vermelho</option>
-                    <option value="#8b5cf6">💜 Violeta</option>
-                    <option value="#ec4899">💖 Rosa</option>
-                    <option value="#06b6d4">💎 Ciano</option>
                 </select>
             </div>
-            <button class="btn-primary" onclick="saveBank()">Salvar Banco</button>
-            <button class="btn-secondary" onclick="deleteCurrentBank()" id="btn-delete-bank" style="display: none; color: var(--danger); border-color: var(--danger);">
-                Excluir Banco
-            </button>
+            <button class="btn-primary" onclick="saveBank()">Salvar</button>
+            <button class="btn-secondary" onclick="deleteCurrentBank()" id="btn-delete-bank" style="display: none; color: var(--danger);">Excluir</button>
         </div>
     </div>
 
-    <!-- CATEGORY SHEET -->
     <div class="bottom-sheet" id="category-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header">
@@ -957,18 +881,17 @@
         </div>
         <div class="sheet-content">
             <div class="input-group">
-                <label class="input-label">Ícone (Emoji)</label>
-                <input type="text" class="input-field" id="cat-emoji-input" placeholder="Ex: 🍔" maxlength="2" style="font-size: 1.5rem; text-align: center;">
+                <label class="input-label">Ícone</label>
+                <input type="text" class="input-field" id="cat-emoji-input" placeholder="🍔" maxlength="2" style="font-size: 1.5rem; text-align: center;">
             </div>
             <div class="input-group">
                 <label class="input-label">Nome</label>
                 <input type="text" class="input-field" id="cat-name-input" placeholder="Ex: Alimentação">
             </div>
-            <button class="btn-primary" onclick="saveCategory()">Adicionar Categoria</button>
+            <button class="btn-primary" onclick="saveCategory()">Adicionar</button>
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="setNav(this, 'home')">
             <span class="nav-icon">🏠</span>
@@ -991,11 +914,9 @@
         </div>
     </nav>
 
-    <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
     <script>
-        // ==================== DATA ====================
         const defaultCats = {
             expense: { food: '🍔 Alimentação', transport: '🚌 Transporte', leisure: '🎮 Lazer', health: '💊 Saúde', housing: '🏠 Moradia', shopping: '🛍️ Compras' },
             income: { salary: '💰 Salário', freelance: '💻 Freelance', investment: '📈 Investimentos', gift: '🎁 Presente' }
@@ -1006,110 +927,66 @@
         let loans = JSON.parse(localStorage.getItem('fc_loans') || '[]');
         let categories = JSON.parse(localStorage.getItem('fc_cats') || JSON.stringify(defaultCats));
         
-        let currentAmount = 0;
-        let currentType = 'expense';
-        let selectedCategory = null;
-        let calcExpr = '';
-        let currentAmortization = 'price';
-        let selectedLoanIndex = null;
-        let currentEditingBank = null;
-        let currentCatType = 'expense';
+        let currentAmount = 0, currentType = 'expense', selectedCategory = null;
+        let calcExpr = '', currentAmortization = 'price', selectedLoanIndex = null;
+        let currentEditingBank = null, currentCatType = 'expense';
 
-        // ==================== INIT ====================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('App iniciado');
             document.getElementById('tx-first-date').valueAsDate = new Date();
             document.getElementById('loan-start-date').valueAsDate = new Date();
             updateUI();
         });
         
-        // ==================== NAVIGATION ====================
-        function setNav(element, nav) {
-            console.log('Nav:', nav);
+        function setNav(el, nav) {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            element.classList.add('active');
-            
-            if (nav === 'home') {
-                showView('main-view');
-            } else if (nav === 'settings' || nav === 'more') {
-                showView('settings-view');
-                renderSettings();
-            } else if (nav === 'loans') {
-                openSheet('loan-sheet');
-            }
+            el.classList.add('active');
+            if (nav === 'home') showView('main-view');
+            else if (nav === 'settings' || nav === 'more') { showView('settings-view'); renderSettings(); }
+            else if (nav === 'loans') openSheet('loan-sheet');
         }
         
-        function showView(viewId) {
-            console.log('Show view:', viewId);
+        function showView(id) {
             document.querySelectorAll('.main-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
         
         function showAllTransactions() {
-            console.log('Show all transactions');
-            const list = document.getElementById('full-transactions-list');
-            list.innerHTML = expenses.map(e => renderTx(e)).join('') || 
-                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
+            document.getElementById('full-transactions-list').innerHTML = expenses.map(e => renderTx(e)).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
             showView('all-transactions-view');
         }
         
-        // ==================== SHEETS ====================
-        function openSheet(sheetId) {
-            console.log('Open sheet:', sheetId);
+        function openSheet(id) {
             document.querySelector('.sheet-overlay').classList.add('active');
-            document.getElementById(sheetId).classList.add('active');
-            
-            if (sheetId === 'transaction-sheet') {
-                renderCategories();
-                updateAmount();
-            }
+            document.getElementById(id).classList.add('active');
+            if (id === 'transaction-sheet') { renderCategories(); updateAmount(); }
         }
         
         function openTransactionSheet(type) {
-            console.log('Open transaction sheet:', type);
             currentType = type;
             document.getElementById('sheet-title').textContent = type === 'expense' ? 'Nova Despesa' : 'Nova Receita';
             document.getElementById('installment-group').style.display = type === 'expense' ? 'block' : 'none';
-            
-            currentAmount = 0;
-            selectedCategory = null;
+            currentAmount = 0; selectedCategory = null;
             document.getElementById('tx-desc').value = '';
             document.getElementById('tx-installment').checked = false;
             document.getElementById('installment-options').style.display = 'none';
-            
             openSheet('transaction-sheet');
-            renderCategories();
-            updateAmount();
         }
         
         function closeAllSheets() {
-            console.log('Close all sheets');
             document.querySelector('.sheet-overlay').classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
             currentEditingBank = null;
         }
         
-        // ==================== KEYPAD ====================
         function addDigit(d) {
-            console.log('Add digit:', d);
             let cents = Math.round(currentAmount * 100);
-            
-            if (cents === 0 && d === 0) {
-                currentAmount = 0;
-                updateAmount();
-                return;
-            }
-            
+            if (cents === 0 && d === 0) { currentAmount = 0; updateAmount(); return; }
             cents = (cents * 10) + d;
             currentAmount = cents / 100;
-            
-            if (currentAmount < 100000) {
-                updateAmount();
-            }
+            if (currentAmount < 100000) updateAmount();
         }
         
         function removeDigit() {
-            console.log('Remove digit');
             let cents = Math.round(currentAmount * 100);
             cents = Math.floor(cents / 10);
             currentAmount = cents / 100;
@@ -1122,119 +999,61 @@
         }
         
         function toggleInstallment() {
-            const show = document.getElementById('tx-installment').checked;
-            document.getElementById('installment-options').style.display = show ? 'block' : 'none';
+            document.getElementById('installment-options').style.display = document.getElementById('tx-installment').checked ? 'block' : 'none';
         }
         
-        // ==================== CATEGORIES ====================
         function renderCategories() {
             const cats = categories[currentType] || {};
-            const html = Object.entries(cats).map(([id, name]) => `
+            document.getElementById('tx-categories').innerHTML = Object.entries(cats).map(([id, name]) => `
                 <div class="category-item ${selectedCategory === id ? 'selected' : ''}" onclick="selectCategory('${id}')">
                     <span class="cat-emoji">${name.split(' ')[0]}</span>
                     <span class="cat-name">${name.split(' ').slice(1).join(' ')}</span>
-                </div>
-            `).join('');
-            document.getElementById('tx-categories').innerHTML = html;
+                </div>`).join('');
         }
         
-        function selectCategory(id) {
-            console.log('Select category:', id);
-            selectedCategory = id;
-            renderCategories();
-            updateAmount();
-        }
+        function selectCategory(id) { selectedCategory = id; renderCategories(); updateAmount(); }
         
-        // ==================== SAVE TRANSACTION ====================
         function saveTransaction() {
-            console.log('Save transaction');
             if (currentAmount <= 0 || !selectedCategory) return;
-            
             const desc = document.getElementById('tx-desc').value;
             const bankId = document.getElementById('tx-bank').value;
             const isInstallment = document.getElementById('tx-installment').checked;
-            const catName = categories[currentType][selectedCategory] || 'Desconhecido';
+            const catName = categories[currentType][selectedCategory];
             
             if (isInstallment && currentType === 'expense') {
                 const parcelas = parseInt(document.getElementById('tx-parcelas').value);
                 const firstDate = document.getElementById('tx-first-date').value;
                 const groupId = Date.now();
-                
                 for (let i = 0; i < parcelas; i++) {
                     const date = new Date(firstDate);
                     date.setMonth(date.getMonth() + i);
-                    expenses.push({
-                        id: Date.now() + i,
-                        type: currentType,
-                        value: currentAmount,
-                        category: selectedCategory,
-                        desc: `${desc || catName} ${i+1}/${parcelas}`,
-                        bankId,
-                        date: date.toISOString().split('T')[0],
-                        groupId
-                    });
+                    expenses.push({ id: Date.now() + i, type: currentType, value: currentAmount, category: selectedCategory, desc: `${desc || catName} ${i+1}/${parcelas}`, bankId, date: date.toISOString().split('T')[0], groupId });
                 }
-                showToast(`✅ ${parcelas}x de R$ ${currentAmount.toFixed(2)} adicionadas`);
+                showToast(`✅ ${parcelas}x adicionadas`);
             } else {
-                expenses.push({
-                    id: Date.now(),
-                    type: currentType,
-                    value: currentAmount,
-                    category: selectedCategory,
-                    desc: desc || catName,
-                    bankId,
-                    date: new Date().toISOString().split('T')[0]
-                });
+                expenses.push({ id: Date.now(), type: currentType, value: currentAmount, category: selectedCategory, desc: desc || catName, bankId, date: new Date().toISOString().split('T')[0] });
                 showToast('✅ Lançamento adicionado');
             }
-            
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-            closeAllSheets();
-            updateUI();
+            closeAllSheets(); updateUI();
         }
         
-        // ==================== CALCULATOR ====================
-        function calcNum(n) {
-            calcExpr += n;
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
-        function calcOp(op) {
-            calcExpr += ` ${op} `;
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
-        function calcClear() {
-            calcExpr = '';
-            document.getElementById('calc-expr').textContent = '';
-            document.getElementById('calc-res').textContent = '0';
-        }
-        
-        function calcBack() {
-            calcExpr = calcExpr.slice(0, -1);
-            document.getElementById('calc-expr').textContent = calcExpr;
-        }
-        
+        function calcNum(n) { calcExpr += n; document.getElementById('calc-expr').textContent = calcExpr; }
+        function calcOp(op) { calcExpr += ` ${op} `; document.getElementById('calc-expr').textContent = calcExpr; }
+        function calcClear() { calcExpr = ''; document.getElementById('calc-expr').textContent = ''; document.getElementById('calc-res').textContent = '0'; }
+        function calcBack() { calcExpr = calcExpr.slice(0, -1); document.getElementById('calc-expr').textContent = calcExpr; }
         function calcEqual() {
             try {
                 const res = eval(calcExpr.replace(/×/g, '*').replace(/÷/g, '/'));
                 document.getElementById('calc-res').textContent = res.toFixed(2);
                 calcExpr = String(res);
-            } catch {
-                showToast('Erro no cálculo');
-            }
+            } catch { showToast('Erro'); }
         }
-        
         function useCalcResult() {
             const res = parseFloat(document.getElementById('calc-res').textContent);
-            if (res > 0) {
-                currentAmount = res;
-                closeAllSheets();
-                openTransactionSheet('expense');
-            }
+            if (res > 0) { currentAmount = res; closeAllSheets(); openTransactionSheet('expense'); }
         }
         
-        // ==================== LOAN / FINANCING ====================
         function selectAmortization(type) {
             currentAmortization = type;
             document.querySelectorAll('.amortization-tab').forEach(t => t.classList.remove('active'));
@@ -1244,180 +1063,93 @@
         function calculatePrice(valor, taxa, parcelas) {
             const i = taxa / 100;
             const pmt = valor * (i * Math.pow(1 + i, parcelas)) / (Math.pow(1 + i, parcelas) - 1);
-            
-            const schedule = [];
-            let saldo = valor;
-            let totalJuros = 0;
-            
+            const schedule = []; let saldo = valor, totalJuros = 0;
             for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i;
-                const amortizacao = pmt - juros;
-                saldo -= amortizacao;
-                totalJuros += juros;
-                
-                schedule.push({
-                    parcela: p,
-                    valor: pmt,
-                    juros: juros,
-                    amortizacao: amortizacao,
-                    saldo: Math.max(0, saldo)
-                });
+                const juros = saldo * i, amortizacao = pmt - juros;
+                saldo -= amortizacao; totalJuros += juros;
+                schedule.push({ parcela: p, valor: pmt, juros, amortizacao, saldo: Math.max(0, saldo) });
             }
-            
             return { parcelaFixa: pmt, totalJuros, schedule };
         }
         
         function calculateSAC(valor, taxa, parcelas) {
-            const amortizacao = valor / parcelas;
-            const i = taxa / 100;
-            
-            const schedule = [];
-            let saldo = valor;
-            let totalJuros = 0;
-            
+            const amortizacao = valor / parcelas, i = taxa / 100;
+            const schedule = []; let saldo = valor, totalJuros = 0;
             for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i;
-                const pmt = amortizacao + juros;
-                saldo -= amortizacao;
-                totalJuros += juros;
-                
-                schedule.push({
-                    parcela: p,
-                    valor: pmt,
-                    juros: juros,
-                    amortizacao: amortizacao,
-                    saldo: Math.max(0, saldo)
-                });
+                const juros = saldo * i, pmt = amortizacao + juros;
+                saldo -= amortizacao; totalJuros += juros;
+                schedule.push({ parcela: p, valor: pmt, juros, amortizacao, saldo: Math.max(0, saldo) });
             }
-            
             return { amortizacaoFixa: amortizacao, totalJuros, schedule };
         }
         
         function saveLoan() {
-            console.log('Save loan');
             const desc = document.getElementById('loan-desc').value;
             const valor = parseFloat(document.getElementById('loan-value').value) || 0;
             const taxa = parseFloat(document.getElementById('loan-rate').value) || 0;
             const parcelas = parseInt(document.getElementById('loan-months').value) || 0;
             const startDate = document.getElementById('loan-start-date').value;
+            if (!desc || valor <= 0 || parcelas <= 0) { showToast('Preencha todos os campos'); return; }
             
-            if (!desc || valor <= 0 || taxa < 0 || parcelas <= 0) {
-                showToast('Preencha todos os campos corretamente');
-                return;
-            }
-            
-            let calc;
-            if (currentAmortization === 'price') {
-                calc = calculatePrice(valor, taxa, parcelas);
-            } else {
-                calc = calculateSAC(valor, taxa, parcelas);
-            }
-            
-            const loan = {
-                id: Date.now(),
-                desc,
-                valor,
-                taxa,
-                parcelas,
-                amortization: currentAmortization,
-                startDate,
-                parcelaAtual: 1,
-                parcelasPagas: 0,
-                saldoDevedor: valor,
-                totalJuros: calc.totalJuros,
-                schedule: calc.schedule
-            };
-            
-            loans.push(loan);
+            const calc = currentAmortization === 'price' ? calculatePrice(valor, taxa, parcelas) : calculateSAC(valor, taxa, parcelas);
+            loans.push({ id: Date.now(), desc, valor, taxa, parcelas, amortization: currentAmortization, startDate, parcelaAtual: 1, parcelasPagas: 0, saldoDevedor: valor, totalJuros: calc.totalJuros, schedule: calc.schedule });
             localStorage.setItem('fc_loans', JSON.stringify(loans));
-            
-            showToast(`💳 ${currentAmortization.toUpperCase()} calculado e salvo!`);
-            closeAllSheets();
-            updateUI();
-            viewLoanDetail(loans.length - 1);
+            showToast('💳 Salvo!'); closeAllSheets(); updateUI(); viewLoanDetail(loans.length - 1);
         }
         
         function viewLoanDetail(index) {
-            console.log('View loan detail:', index);
             selectedLoanIndex = index;
-            const loan = loans[index];
-            if (!loan) return;
-            
-            const currentParcel = loan.schedule[loan.parcelasPagas] || loan.schedule[loan.schedule.length - 1];
+            const loan = loans[index]; if (!loan) return;
             const nextParcel = loan.schedule[loan.parcelasPagas] || null;
             
             let html = `
                 <div style="margin-bottom: 20px;">
                     <h2 style="font-size: 1.3rem; margin-bottom: 8px;">${loan.desc}</h2>
-                    <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                        ${loan.amortization.toUpperCase()}
-                    </span>
+                    <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">${loan.amortization.toUpperCase()}</span>
                 </div>
-                
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Valor Financiado</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.valor.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Valor</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.valor.toFixed(2)}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Taxa de Juros</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">${loan.taxa}% a.m.</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Taxa</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">${loan.taxa}%</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Total de Juros</div>
-                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total</div>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toFixed(2)}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Saldo Devedor</div>
-                        <div style="font-size: 1.2rem; font-weight: 700;">R$ ${loan.saldoDevedor.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Saldo</div>
+                        <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.saldoDevedor.toFixed(2)}</div>
                     </div>
                 </div>
-                
                 <div style="margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.875rem;">
-                        <span>Progresso</span>
-                        <span>${loan.parcelasPagas} de ${loan.parcelas} parcelas</span>
+                        <span>Progresso</span><span>${loan.parcelasPagas} de ${loan.parcelas}</span>
                     </div>
                     <div style="height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); border-radius: 4px; width: ${(loan.parcelasPagas / loan.parcelas) * 100}%"></div>
+                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); width: ${(loan.parcelasPagas / loan.parcelas) * 100}%"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
             
             if (nextParcel) {
                 html += `
                     <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 4px;">Próxima Parcela (#${nextParcel.parcela})</div>
-                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">R$ ${nextParcel.valor.toFixed(2)}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">
-                            Juros: R$ ${nextParcel.juros.toFixed(2)} | Amortização: R$ ${nextParcel.amortizacao.toFixed(2)}
-                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Próxima (#${nextParcel.parcela})</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin: 4px 0;">R$ ${nextParcel.valor.toFixed(2)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Juros: R$ ${nextParcel.juros.toFixed(2)} | Amort: R$ ${nextParcel.amortizacao.toFixed(2)}</div>
                     </div>
-                    
-                    <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">
-                        💸 Pagar Parcela ${nextParcel.parcela}
-                    </button>
-                `;
+                    <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">💸 Pagar Parcela ${nextParcel.parcela}</button>`;
             }
             
             let tableRows = '';
             const startIdx = Math.max(0, loan.parcelasPagas - 2);
-            const endIdx = Math.min(loan.schedule.length, startIdx + 15);
-            
+            const endIdx = Math.min(loan.schedule.length, startIdx + 12);
             for (let i = startIdx; i < endIdx; i++) {
                 const p = loan.schedule[i];
-                const isPaid = i < loan.parcelasPagas;
-                const isNext = i === loan.parcelasPagas;
-                
-                tableRows += `
-                    <tr class="${isPaid ? 'paid' : ''} ${isNext ? 'next' : ''}">
-                        <td>${p.parcela}</td>
-                        <td>R$ ${p.valor.toFixed(2)}</td>
-                        <td>R$ ${p.juros.toFixed(2)}</td>
-                        <td>R$ ${p.amortizacao.toFixed(2)}</td>
-                        <td>R$ ${p.saldo.toFixed(2)}</td>
-                    </tr>
-                `;
+                tableRows += `<tr class="${i < loan.parcelasPagas ? 'paid' : ''} ${i === loan.parcelasPagas ? 'next' : ''}"><td>${p.parcela}</td><td>R$ ${p.valor.toFixed(2)}</td><td>R$ ${p.juros.toFixed(2)}</td><td>R$ ${p.amortizacao.toFixed(2)}</td><td>R$ ${p.saldo.toFixed(2)}</td></tr>`;
             }
             
             html += `
@@ -1425,130 +1157,59 @@
                     <h4 style="margin-bottom: 12px; font-size: 1rem;">Tabela de Amortização</h4>
                     <div style="overflow-x: auto;">
                         <table class="installment-table">
-                            <thead>
-                                <tr>
-                                    <th>Nº</th>
-                                    <th>Valor</th>
-                                    <th>Juros</th>
-                                    <th>Amort.</th>
-                                    <th>Saldo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows}
-                            </tbody>
+                            <thead><tr><th>Nº</th><th>Valor</th><th>Juros</th><th>Amort.</th><th>Saldo</th></tr></thead>
+                            <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-                    ${endIdx < loan.schedule.length ? `<div style="text-align: center; color: var(--text-muted); margin-top: 8px; font-size: 0.8rem;">... e mais ${loan.schedule.length - endIdx} parcelas</div>` : ''}
+                    ${endIdx < loan.schedule.length ? `<div style="text-align: center; color: var(--text-muted); margin-top: 8px; font-size: 0.8rem;">... e mais ${loan.schedule.length - endIdx}</div>` : ''}
                 </div>
-                
-                <button class="btn-secondary" onclick="deleteLoan(${index})" style="color: var(--danger); border-color: var(--danger); margin-top: 20px;">
-                    🗑️ Excluir Financiamento
-                </button>
-            `;
+                <button class="btn-secondary" onclick="deleteLoan(${index})" style="color: var(--danger); margin-top: 20px;">🗑️ Excluir</button>`;
             
             document.getElementById('loan-detail-content').innerHTML = html;
             openSheet('loan-detail-sheet');
         }
         
         function payLoanParcel(index) {
-            console.log('Pay loan parcel:', index);
             const loan = loans[index];
-            if (!loan || loan.parcelasPagas >= loan.parcelas) {
-                showToast('Todas parcelas já pagas');
-                return;
-            }
-            
+            if (!loan || loan.parcelasPagas >= loan.parcelas) { showToast('Todas pagas'); return; }
             const parcel = loan.schedule[loan.parcelasPagas];
-            
-            expenses.push({
-                id: Date.now(),
-                type: 'expense',
-                value: parcel.valor,
-                category: 'housing',
-                desc: `Parcela ${parcel.parcela}/${loan.parcelas} - ${loan.desc}`,
-                date: new Date().toISOString().split('T')[0]
-            });
-            
-            loan.parcelasPagas++;
-            loan.saldoDevedor = parcel.saldo;
-            
+            expenses.push({ id: Date.now(), type: 'expense', value: parcel.valor, category: 'housing', desc: `Parcela ${parcel.parcela}/${loan.parcelas} - ${loan.desc}`, date: new Date().toISOString().split('T')[0] });
+            loan.parcelasPagas++; loan.saldoDevedor = parcel.saldo;
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
             localStorage.setItem('fc_loans', JSON.stringify(loans));
-            
-            showToast(`✅ Parcela ${parcel.parcela} paga!`);
-            updateUI();
-            viewLoanDetail(index);
+            showToast(`✅ Parcela ${parcel.parcela} paga!`); updateUI(); viewLoanDetail(index);
         }
         
         function deleteLoan(index) {
-            if (confirm('Tem certeza que deseja excluir este financiamento?')) {
-                loans.splice(index, 1);
-                localStorage.setItem('fc_loans', JSON.stringify(loans));
-                showToast('Financiamento removido');
-                closeAllSheets();
-                updateUI();
-            }
+            if (confirm('Excluir?')) { loans.splice(index, 1); localStorage.setItem('fc_loans', JSON.stringify(loans)); showToast('Removido'); closeAllSheets(); updateUI(); }
         }
         
-        // ==================== SETTINGS ====================
         function renderSettings() {
-            renderBanksList();
-            renderCategoriesList();
+            renderBanksList(); renderCategoriesList();
         }
 
         function renderBanksList() {
             const container = document.getElementById('banks-list-settings');
-            if (banks.length === 0) {
-                container.innerHTML = `
-                    <div style="color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.9rem; background: var(--surface); border-radius: 12px;">
-                        Nenhum banco cadastrado.<br>Adicione seu primeiro banco acima.
-                    </div>`;
-                return;
-            }
-            
+            if (banks.length === 0) { container.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 20px; background: var(--surface); border-radius: 12px;">Nenhum banco cadastrado</div>`; return; }
             container.innerHTML = banks.map((bank, index) => {
                 const bankTx = expenses.filter(e => e.bankId == bank.id);
                 const income = bankTx.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
                 const expense = bankTx.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
                 const currentBalance = (bank.initial || 0) + income - expense;
-                
                 return `
                 <div class="bank-item" onclick="editBank(${index})" style="border-left-color: ${bank.color || '#6366f1'};">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 40px; height: 40px; background: ${bank.color || '#6366f1'}20; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                            🏦
-                        </div>
-                        <div class="bank-info">
-                            <h4>${bank.name}</h4>
-                            <small>${bankTx.length} transações</small>
-                        </div>
+                        <div style="width: 40px; height: 40px; background: ${bank.color || '#6366f1'}20; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">🏦</div>
+                        <div class="bank-info"><h4>${bank.name}</h4><small>${bankTx.length} transações</small></div>
                     </div>
-                    <div class="bank-balance">
-                        <div class="amount" style="color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">
-                            R$ ${currentBalance.toFixed(2)}
-                        </div>
-                        <div class="initial">Inicial: R$ ${(bank.initial || 0).toFixed(2)}</div>
-                    </div>
-                </div>
-                `;
+                    <div class="bank-balance"><div class="amount" style="color: ${currentBalance >= 0 ? 'var(--success)' : 'var(--danger)'};">R$ ${currentBalance.toFixed(2)}</div><div class="initial">Inicial: R$ ${(bank.initial || 0).toFixed(2)}</div></div>
+                </div>`;
             }).join('');
         }
 
         function renderCategoriesList() {
-            const expContainer = document.getElementById('expense-cats-list');
-            expContainer.innerHTML = Object.entries(categories.expense || {}).map(([id, name]) => `
-                <span class="category-tag">
-                    ${name} <span class="delete" onclick="deleteCategory('expense', '${id}')">×</span>
-                </span>
-            `).join('');
-            
-            const incContainer = document.getElementById('income-cats-list');
-            incContainer.innerHTML = Object.entries(categories.income || {}).map(([id, name]) => `
-                <span class="category-tag">
-                    ${name} <span class="delete" onclick="deleteCategory('income', '${id}')">×</span>
-                </span>
-            `).join('');
+            document.getElementById('expense-cats-list').innerHTML = Object.entries(categories.expense || {}).map(([id, name]) => `<span class="category-tag">${name} <span class="delete" onclick="event.stopPropagation(); deleteCategory('expense', '${id}')">×</span></span>`).join('');
+            document.getElementById('income-cats-list').innerHTML = Object.entries(categories.income || {}).map(([id, name]) => `<span class="category-tag">${name} <span class="delete" onclick="event.stopPropagation(); deleteCategory('income', '${id}')">×</span></span>`).join('');
         }
 
         function openBankSheet() {
@@ -1576,36 +1237,18 @@
             const name = document.getElementById('bank-name').value.trim();
             const initial = parseFloat(document.getElementById('bank-initial').value) || 0;
             const color = document.getElementById('bank-color').value;
-            
-            if (!name) {
-                showToast('Digite o nome do banco');
-                return;
-            }
-            
-            if (currentEditingBank !== null) {
-                banks[currentEditingBank] = { ...banks[currentEditingBank], name, initial, color };
-                showToast('Banco atualizado');
-            } else {
-                banks.push({ id: Date.now(), name, initial, color });
-                showToast('Banco adicionado');
-            }
-            
+            if (!name) { showToast('Digite o nome'); return; }
+            if (currentEditingBank !== null) { banks[currentEditingBank] = { ...banks[currentEditingBank], name, initial, color }; showToast('Atualizado'); }
+            else { banks.push({ id: Date.now(), name, initial, color }); showToast('Adicionado'); }
             localStorage.setItem('fc_banks', JSON.stringify(banks));
-            closeAllSheets();
-            renderSettings();
-            updateUI();
+            closeAllSheets(); renderSettings(); updateUI();
         }
 
         function deleteCurrentBank() {
             if (currentEditingBank === null) return;
-            if (!confirm('Tem certeza? Todas as transações deste banco ficarão sem vínculo.')) return;
-            
-            banks.splice(currentEditingBank, 1);
-            localStorage.setItem('fc_banks', JSON.stringify(banks));
-            showToast('Banco removido');
-            closeAllSheets();
-            renderSettings();
-            updateUI();
+            if (!confirm('Tem certeza?')) return;
+            banks.splice(currentEditingBank, 1); localStorage.setItem('fc_banks', JSON.stringify(banks));
+            showToast('Removido'); closeAllSheets(); renderSettings(); updateUI();
         }
 
         function openCategorySheet(type) {
@@ -1618,217 +1261,90 @@
         function saveCategory() {
             const emoji = document.getElementById('cat-emoji-input').value.trim();
             const name = document.getElementById('cat-name-input').value.trim();
-            
-            if (!emoji || !name) {
-                showToast('Preencha ícone e nome');
-                return;
-            }
-            
+            if (!emoji || !name) { showToast('Preencha tudo'); return; }
             const id = name.toLowerCase().replace(/\s+/g, '_');
             if (!categories[currentCatType]) categories[currentCatType] = {};
             categories[currentCatType][id] = `${emoji} ${name}`;
-            
             localStorage.setItem('fc_cats', JSON.stringify(categories));
-            showToast('Categoria adicionada');
-            closeAllSheets();
-            renderSettings();
+            showToast('Adicionada'); closeAllSheets(); renderSettings();
         }
 
         function deleteCategory(type, id) {
-            if (!confirm('Remover esta categoria?')) return;
-            delete categories[type][id];
-            localStorage.setItem('fc_cats', JSON.stringify(categories));
-            renderSettings();
+            if (!confirm('Remover?')) return;
+            delete categories[type][id]; localStorage.setItem('fc_cats', JSON.stringify(categories)); renderSettings();
         }
 
         function exportData() {
-            const data = {
-                expenses,
-                banks,
-                loans,
-                categories,
-                exportDate: new Date().toISOString(),
-                version: '1.0'
-            };
-            
+            const data = { expenses, banks, loans, categories, exportDate: new Date().toISOString() };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `fincontrol_backup_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Backup exportado!');
+            const a = document.createElement('a'); a.href = url; a.download = `fincontrol_backup_${new Date().toISOString().split('T')[0]}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            showToast('Exportado!');
         }
 
         function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
+            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    
-                    if (!confirm(`Isso substituirá todos os dados atuais.\n\nDespesas: ${data.expenses?.length || 0}\nBancos: ${data.banks?.length || 0}\nEmpréstimos: ${data.loans?.length || 0}\n\nContinuar?`)) {
-                        return;
-                    }
-                    
-                    expenses = data.expenses || [];
-                    banks = data.banks || [];
-                    loans = data.loans || [];
-                    categories = data.categories || defaultCats;
-                    
-                    localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-                    localStorage.setItem('fc_banks', JSON.stringify(banks));
-                    localStorage.setItem('fc_loans', JSON.stringify(loans));
-                    localStorage.setItem('fc_cats', JSON.stringify(categories));
-                    
-                    updateUI();
-                    renderSettings();
-                    showToast('Dados importados com sucesso!');
-                } catch (err) {
-                    showToast('Erro ao importar arquivo');
-                    console.error(err);
-                }
+                    if (!confirm(`Substituir dados? Despesas: ${data.expenses?.length || 0}, Bancos: ${data.banks?.length || 0}`)) return;
+                    expenses = data.expenses || []; banks = data.banks || []; loans = data.loans || []; categories = data.categories || defaultCats;
+                    localStorage.setItem('fc_expenses', JSON.stringify(expenses)); localStorage.setItem('fc_banks', JSON.stringify(banks)); localStorage.setItem('fc_loans', JSON.stringify(loans)); localStorage.setItem('fc_cats', JSON.stringify(categories));
+                    updateUI(); renderSettings(); showToast('Importado!');
+                } catch { showToast('Erro'); }
                 input.value = '';
-            };
-            reader.readAsText(file);
+            }; reader.readAsText(file);
         }
 
         function clearAllData() {
-            if (!confirm('⚠️ ATENÇÃO!\n\nIsso apagará TODOS os dados permanentemente.\n\nDeseja continuar?')) return;
-            
-            const confirmation = prompt('Digite "APAGAR" para confirmar:');
-            if (confirmation !== 'APAGAR') {
-                showToast('Operação cancelada');
-                return;
-            }
-            
-            expenses = [];
-            banks = [];
-            loans = [];
-            categories = JSON.parse(JSON.stringify(defaultCats));
-            
-            localStorage.removeItem('fc_expenses');
-            localStorage.removeItem('fc_banks');
-            localStorage.removeItem('fc_loans');
-            localStorage.removeItem('fc_cats');
-            
-            updateUI();
-            renderSettings();
-            showView('main-view');
-            showToast('Todos os dados foram apagados');
+            if (!confirm('⚠️ Apagar tudo?')) return;
+            if (prompt('Digite "APAGAR":') !== 'APAGAR') { showToast('Cancelado'); return; }
+            expenses = []; banks = []; loans = []; categories = JSON.parse(JSON.stringify(defaultCats));
+            localStorage.clear(); updateUI(); renderSettings(); showView('main-view'); showToast('Apagado');
         }
         
-        // ==================== UI UPDATES ====================
         function updateUI() {
-            console.log('Update UI');
-            
             const income = expenses.filter(e => e.type === 'income').reduce((s, e) => s + e.value, 0);
             const expense = expenses.filter(e => e.type === 'expense').reduce((s, e) => s + e.value, 0);
-            
-            // Cálculo correto do saldo dos bancos
             const bankBalance = banks.reduce((s, b) => {
-                const bankTransactions = expenses.filter(e => e.bankId == b.id);
-                const bankIncome = bankTransactions.filter(e => e.type === 'income').reduce((sum, e) => sum + e.value, 0);
-                const bankExpense = bankTransactions.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
-                return s + (b.initial || 0) + bankIncome - bankExpense;
+                const bankTx = expenses.filter(e => e.bankId == b.id);
+                return s + (b.initial || 0) + bankTx.filter(e => e.type === 'income').reduce((sum, e) => sum + e.value, 0) - bankTx.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.value, 0);
             }, 0);
-            
-            const loanTotal = loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0);
             
             document.getElementById('total-balance').textContent = `R$ ${bankBalance.toFixed(2)}`;
             document.getElementById('income-badge').textContent = `↑ R$ ${income.toFixed(2)}`;
             document.getElementById('expense-badge').textContent = `↓ R$ ${expense.toFixed(2)}`;
-            document.getElementById('loan-badge').textContent = `💳 R$ ${loanTotal.toFixed(2)}`;
+            document.getElementById('loan-badge').textContent = `💳 R$ ${loans.reduce((s, l) => s + (l.saldoDevedor || 0), 0).toFixed(2)}`;
             
             const bankSelect = document.getElementById('tx-bank');
-            if (bankSelect) {
-                bankSelect.innerHTML = '<option value="">Selecione...</option>' + 
-                    banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-            }
+            if (bankSelect) bankSelect.innerHTML = '<option value="">Selecione...</option>' + banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
             
-            const recent = expenses.slice(0, 5);
-            document.getElementById('recent-list').innerHTML = recent.map(e => renderTx(e)).join('') || 
-                '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento ainda</div>';
-            
+            document.getElementById('recent-list').innerHTML = expenses.slice(0, 5).map(e => renderTx(e)).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
             document.getElementById('loans-list').innerHTML = loans.map((l, index) => `
                 <div class="loan-card" onclick="viewLoanDetail(${index})">
                     <div class="loan-header">
-                        <div>
-                            <div class="loan-title">${l.desc}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                                ${l.amortization.toUpperCase()} | ${l.parcelas}x de R$ ${l.schedule[0]?.valor.toFixed(2) || '0.00'}
-                            </div>
-                        </div>
+                        <div><div class="loan-title">${l.desc}</div><div style="font-size: 0.8rem; color: var(--text-muted);">${l.amortization.toUpperCase()} | ${l.parcelas}x</div></div>
                         <div class="loan-amount">R$ ${l.saldoDevedor.toFixed(0)}</div>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div>
-                    </div>
-                    <div class="loan-stats">
-                        <span>${l.parcelasPagas || 0} de ${l.parcelas} parcelas</span>
-                        <span>Próxima: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toFixed(2)}</span>
-                    </div>
-                </div>
-            `).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo cadastrado</div>';
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div></div>
+                    <div class="loan-stats"><span>${l.parcelasPagas || 0} de ${l.parcelas}</span><span>Próx: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toFixed(2)}</span></div>
+                </div>`).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo</div>';
         }
         
         function renderTx(e) {
             const isIncome = e.type === 'income';
             const cat = categories[e.type]?.[e.category] || e.category || '📦 Outros';
-            const emoji = cat.split(' ')[0];
-            const name = cat.split(' ').slice(1).join(' ') || cat;
-            
             return `
-            <div class="transaction-item" onclick="if(confirm('Excluir este lançamento?')) deleteTransaction(${e.id})">
-                <div class="tx-icon">${emoji}</div>
-                <div class="tx-info">
-                    <div class="tx-title">${e.desc || name}</div>
-                    <div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div>
-                </div>
-                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">
-                    ${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}
-                </div>
-            </div>
-            `;
+            <div class="transaction-item" onclick="if(confirm('Excluir?')) deleteTransaction(${e.id})">
+                <div class="tx-icon">${cat.split(' ')[0]}</div>
+                <div class="tx-info"><div class="tx-title">${e.desc || cat}</div><div class="tx-date">${new Date(e.date).toLocaleDateString('pt-BR')}</div></div>
+                <div class="tx-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'}R$ ${e.value.toFixed(2)}</div>
+            </div>`;
         }
         
-        function deleteTransaction(id) {
-            expenses = expenses.filter(e => e.id !== id);
-            localStorage.setItem('fc_expenses', JSON.stringify(expenses));
-            updateUI();
-            showToast('Lançamento removido');
-        }
-        
-        // ==================== TOAST ====================
-        function showToast(msg) {
-            console.log('Toast:', msg);
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-        
-        // Swipe to close sheets
-        let touchStartY = 0;
-        document.querySelectorAll('.bottom-sheet').forEach(sheet => {
-            sheet.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
-            sheet.addEventListener('touchend', e => {
-                if (e.changedTouches[0].clientY - touchStartY > 100) closeAllSheets();
-            });
-        });
-        
-        // Prevent double-tap zoom on buttons
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('touchend', e => {
-                e.preventDefault();
-                btn.click();
-            });
-        });
+        function deleteTransaction(id) { expenses = expenses.filter(e => e.id !== id); localStorage.setItem('fc_expenses', JSON.stringify(expenses)); updateUI(); showToast('Removido'); }
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
     </script>
 </body>
 </html>
