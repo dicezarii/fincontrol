@@ -601,6 +601,16 @@
             color: var(--text-muted);
             margin-top: 4px;
         }
+
+        .info-box {
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -830,6 +840,14 @@
                 <label class="input-label">Parcelas *</label>
                 <input type="number" class="input-field" id="loan-months" placeholder="120" min="1">
             </div>
+            
+            <!-- NOVO: Campo para valor da parcela personalizado -->
+            <div class="input-group">
+                <label class="input-label">Valor da Parcela (R$) <span style="color: var(--text-muted); font-size: 0.8rem;">- Opcional</span></label>
+                <input type="text" inputmode="decimal" class="input-field" id="loan-parcela-value" placeholder="1522,69">
+                <div class="hint">Se o valor calculado não bater exatamente, informe o valor real da parcela aqui</div>
+            </div>
+            
             <div class="input-group">
                 <label class="input-label">Sistema</label>
                 <div class="amortization-tabs">
@@ -840,6 +858,7 @@
             <div class="input-group">
                 <label class="input-label">Primeira Parcela *</label>
                 <input type="date" class="input-field" id="loan-start-date">
+                <div class="hint">O sistema calculará automaticamente quantas parcelas já foram pagas</div>
             </div>
             <button class="btn-primary" onclick="saveLoan()">Salvar Empréstimo</button>
         </div>
@@ -975,6 +994,22 @@
             return isNaN(result) ? 0 : result;
         }
 
+        // NOVO: Calcular diferença de meses entre duas datas
+        function getMonthsDifference(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            let months = (end.getFullYear() - start.getFullYear()) * 12;
+            months += end.getMonth() - start.getMonth();
+            
+            // Se o dia do endDate for anterior ao dia do startDate, não conta o mês atual
+            if (end.getDate() < start.getDate()) {
+                months--;
+            }
+            
+            return Math.max(0, months);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('tx-first-date').valueAsDate = new Date();
             document.getElementById('loan-start-date').valueAsDate = new Date();
@@ -1104,26 +1139,71 @@
             document.getElementById(`tab-${type}`).classList.add('active');
         }
         
-        function calculatePrice(valor, taxa, parcelas) {
+        function calculatePrice(valor, taxa, parcelas, parcelaPersonalizada = null) {
             const i = taxa / 100;
-            const pmt = valor * (i * Math.pow(1 + i, parcelas)) / (Math.pow(1 + i, parcelas) - 1);
-            const schedule = []; let saldo = valor, totalJuros = 0;
-            for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i, amortizacao = pmt - juros;
-                saldo -= amortizacao; totalJuros += juros;
-                schedule.push({ parcela: p, valor: pmt, juros, amortizacao, saldo: Math.max(0, saldo) });
+            let pmt;
+            
+            // Se informou valor personalizado, usa ele
+            if (parcelaPersonalizada && parcelaPersonalizada > 0) {
+                pmt = parcelaPersonalizada;
+            } else {
+                pmt = valor * (i * Math.pow(1 + i, parcelas)) / (Math.pow(1 + i, parcelas) - 1);
             }
+            
+            const schedule = []; 
+            let saldo = valor, totalJuros = 0;
+            
+            for (let p = 1; p <= parcelas; p++) {
+                const juros = saldo * i;
+                const amortizacao = pmt - juros;
+                saldo -= amortizacao;
+                totalJuros += juros;
+                
+                schedule.push({ 
+                    parcela: p, 
+                    valor: pmt, 
+                    juros: Math.max(0, juros), 
+                    amortizacao: Math.max(0, amortizacao), 
+                    saldo: Math.max(0, saldo) 
+                });
+            }
+            
             return { parcelaFixa: pmt, totalJuros, schedule };
         }
         
-        function calculateSAC(valor, taxa, parcelas) {
-            const amortizacao = valor / parcelas, i = taxa / 100;
-            const schedule = []; let saldo = valor, totalJuros = 0;
+        function calculateSAC(valor, taxa, parcelas, parcelaPersonalizada = null) {
+            const i = taxa / 100;
+            const amortizacao = valor / parcelas;
+            const schedule = []; 
+            let saldo = valor, totalJuros = 0;
+            
             for (let p = 1; p <= parcelas; p++) {
-                const juros = saldo * i, pmt = amortizacao + juros;
-                saldo -= amortizacao; totalJuros += juros;
-                schedule.push({ parcela: p, valor: pmt, juros, amortizacao, saldo: Math.max(0, saldo) });
+                const juros = saldo * i;
+                let pmt = amortizacao + juros;
+                
+                // Se informou parcela personalizada no SAC (primeira parcela), ajusta
+                // Nota: No SAC o valor diminui, então a parcela personalizada seria a primeira
+                if (parcelaPersonalizada && p === 1 && parcelaPersonalizada > 0) {
+                    // Recalcula a taxa efetiva baseada na parcela informada
+                    // pmt = amortizacao + (valor * i_efetivo)
+                    // i_efetivo = (pmt - amortizacao) / valor
+                    const iEfetivo = (parcelaPersonalizada - amortizacao) / valor;
+                    // Recalcula todo o schedule com a taxa efetiva
+                    return calculateSAC(valor, iEfetivo * 100, parcelas, null);
+                }
+                
+                saldo -= amortizacao;
+                totalJuros += juros;
+                
+                schedule.push({ 
+                    parcela: p, 
+                    valor: pmt, 
+                    juros: Math.max(0, juros), 
+                    amortizacao: Math.max(0, amortizacao), 
+                    saldo: Math.max(0, saldo) 
+                });
             }
+            
             return { amortizacaoFixa: amortizacao, totalJuros, schedule };
         }
         
@@ -1132,6 +1212,7 @@
             const valorInput = document.getElementById('loan-value').value.trim();
             const taxaInput = document.getElementById('loan-rate').value.trim();
             const parcelasInput = document.getElementById('loan-months').value.trim();
+            const parcelaValorInput = document.getElementById('loan-parcela-value').value.trim();
             const startDate = document.getElementById('loan-start-date').value;
             
             // Remove classes de erro anteriores
@@ -1176,6 +1257,7 @@
             const valor = parseNumber(valorInput);
             const taxa = parseNumber(taxaInput);
             const parcelas = parseInt(parcelasInput);
+            const parcelaPersonalizada = parseNumber(parcelaValorInput);
             
             if (valor <= 0) {
                 document.getElementById('loan-value').classList.add('error');
@@ -1189,12 +1271,51 @@
                 return;
             }
             
-            const calc = currentAmortization === 'price' ? calculatePrice(valor, taxa, parcelas) : calculateSAC(valor, taxa, parcelas);
-            loans.push({ id: Date.now(), desc, valor, taxa, parcelas, amortization: currentAmortization, startDate, parcelaAtual: 1, parcelasPagas: 0, saldoDevedor: valor, totalJuros: calc.totalJuros, schedule: calc.schedule });
+            // NOVO: Calcular parcelas já pagas automaticamente
+            const hoje = new Date();
+            const dataInicio = new Date(startDate);
+            let parcelasPagas = getMonthsDifference(dataInicio, hoje);
+            
+            // Limitar ao total de parcelas
+            if (parcelasPagas > parcelas) {
+                parcelasPagas = parcelas;
+            }
+            
+            // Calcular o schedule
+            const calc = currentAmortization === 'price' 
+                ? calculatePrice(valor, taxa, parcelas, parcelaPersonalizada > 0 ? parcelaPersonalizada : null) 
+                : calculateSAC(valor, taxa, parcelas, parcelaPersonalizada > 0 ? parcelaPersonalizada : null);
+            
+            // Calcular saldo devedor baseado nas parcelas já pagas
+            let saldoDevedor = valor;
+            if (parcelasPagas > 0 && parcelasPagas <= parcelas) {
+                saldoDevedor = calc.schedule[parcelasPagas - 1].saldo;
+            } else if (parcelasPagas >= parcelas) {
+                saldoDevedor = 0;
+            }
+            
+            loans.push({ 
+                id: Date.now(), 
+                desc, 
+                valor, 
+                taxa, 
+                parcelas, 
+                amortization: currentAmortization, 
+                startDate, 
+                parcelaAtual: parcelasPagas + 1, 
+                parcelasPagas: parcelasPagas, 
+                saldoDevedor: saldoDevedor, 
+                totalJuros: calc.totalJuros, 
+                schedule: calc.schedule,
+                parcelaPersonalizada: parcelaPersonalizada > 0 ? parcelaPersonalizada : null
+            });
+            
             localStorage.setItem('fc_loans', JSON.stringify(loans));
-            showToast('💳 Empréstimo salvo!'); 
+            showToast(`💳 Empréstimo salvo! ${parcelasPagas > 0 ? `(${parcelasPagas} parcelas já pagas)` : ''}`); 
             closeAllSheets(); 
             updateUI(); 
+            
+            // Mostrar detalhes do empréstimo criado
             viewLoanDetail(loans.length - 1);
         }
         
@@ -1207,10 +1328,11 @@
                 <div style="margin-bottom: 20px;">
                     <h2 style="font-size: 1.3rem; margin-bottom: 8px;">${loan.desc}</h2>
                     <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">${loan.amortization.toUpperCase()}</span>
+                    ${loan.parcelaPersonalizada ? '<span style="background: rgba(245,158,11,0.2); color: var(--warning); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; margin-left: 8px;">Valor Ajustado</span>' : ''}
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Valor</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Valor Original</div>
                         <div style="font-size: 1.1rem; font-weight: 700;">R$ ${loan.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
@@ -1235,7 +1357,7 @@
                     </div>
                 </div>`;
             
-            if (nextParcel) {
+            if (nextParcel && loan.parcelasPagas < loan.parcelas) {
                 html += `
                     <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
                         <div style="font-size: 0.875rem; color: var(--text-muted);">Próxima (#${nextParcel.parcela})</div>
@@ -1243,6 +1365,12 @@
                         <div style="font-size: 0.8rem; color: var(--text-muted);">Juros: R$ ${nextParcel.juros.toFixed(2)} | Amort: R$ ${nextParcel.amortizacao.toFixed(2)}</div>
                     </div>
                     <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-bottom: 12px;">💸 Pagar Parcela ${nextParcel.parcela}</button>`;
+            } else if (loan.parcelasPagas >= loan.parcelas) {
+                html += `
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--success);">✅ Empréstimo Quitado</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Todas as ${loan.parcelas} parcelas foram pagas</div>
+                    </div>`;
             }
             
             let tableRows = '';
@@ -1275,10 +1403,13 @@
             if (!loan || loan.parcelasPagas >= loan.parcelas) { showToast('Todas pagas'); return; }
             const parcel = loan.schedule[loan.parcelasPagas];
             expenses.push({ id: Date.now(), type: 'expense', value: parcel.valor, category: 'housing', desc: `Parcela ${parcel.parcela}/${loan.parcelas} - ${loan.desc}`, date: new Date().toISOString().split('T')[0] });
-            loan.parcelasPagas++; loan.saldoDevedor = parcel.saldo;
+            loan.parcelasPagas++; 
+            loan.saldoDevedor = parcel.saldo;
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
             localStorage.setItem('fc_loans', JSON.stringify(loans));
-            showToast(`✅ Parcela ${parcel.parcela} paga!`); updateUI(); viewLoanDetail(index);
+            showToast(`✅ Parcela ${parcel.parcela} paga!`); 
+            updateUI(); 
+            viewLoanDetail(index);
         }
         
         function deleteLoan(index) {
