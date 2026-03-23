@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f0f1a">
+    <meta name="theme-color" content="#0a0a0f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>FinControl</title>
@@ -19,13 +19,14 @@
             --bg: #0a0a0f;
             --surface: #141419;
             --surface-light: #1e1e26;
+            --surface-lighter: #252532;
             --text: #ffffff;
             --text-secondary: #9ca3af;
             --text-muted: #6b7280;
             --border: rgba(255,255,255,0.08);
             --radius: 20px;
             --radius-sm: 12px;
-            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius-xs: 8px;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -130,7 +131,7 @@
             z-index: 1;
         }
         
-        /* QUICK ACTIONS - FLOATING BUTTONS */
+        /* QUICK ACTIONS */
         .quick-actions {
             display: flex;
             gap: 12px;
@@ -525,6 +526,170 @@
             color: var(--text-muted);
         }
         
+        /* SETTINGS / MORE SCREEN */
+        .settings-header {
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .settings-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .settings-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        .settings-group {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-item:active {
+            background: var(--surface-light);
+        }
+        
+        .settings-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+        
+        .settings-icon.blue { background: rgba(59,130,246,0.2); }
+        .settings-icon.green { background: rgba(16,185,129,0.2); }
+        .settings-icon.red { background: rgba(239,68,68,0.2); }
+        .settings-icon.purple { background: rgba(139,92,246,0.2); }
+        .settings-icon.orange { background: rgba(245,158,11,0.2); }
+        .settings-icon.gray { background: rgba(107,114,128,0.2); }
+        
+        .settings-content {
+            flex: 1;
+        }
+        
+        .settings-label {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .settings-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        .settings-value {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .settings-arrow {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-left: 8px;
+        }
+        
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: var(--surface-light);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: var(--primary);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            left: 24px;
+        }
+        
+        .danger-zone {
+            margin-top: 32px;
+            padding: 20px;
+            background: rgba(239,68,68,0.05);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: var(--radius-sm);
+        }
+        
+        .danger-title {
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-danger {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            color: var(--danger);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-danger:active { background: rgba(239,68,68,0.1); }
+        
+        .app-info {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        .app-version {
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+        
+        .app-credits {
+            font-size: 0.75rem;
+        }
+        
         /* TOAST */
         .toast {
             position: fixed;
@@ -537,7 +702,7 @@
             border-radius: 50px;
             font-size: 0.9rem;
             font-weight: 500;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             border: 1px solid var(--border);
             z-index: 3000;
             opacity: 0;
@@ -561,10 +726,37 @@
         .animate-in {
             animation: slideUp 0.3s ease;
         }
+        
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
-    <!-- MAIN CONTENT -->
+    <!-- MAIN VIEW (HOME) -->
     <div class="main-content" id="main-view">
         <!-- BALANCE CARD -->
         <div class="balance-card animate-in">
@@ -636,25 +828,6 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="expandable-card" onclick="toggleCard(this)">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <div class="card-info">
-                        <div class="card-title">Categorias</div>
-                        <div class="card-subtitle">Personalize seus gastos</div>
-                    </div>
-                    <div class="card-arrow">▼</div>
-                </div>
-                <div class="card-content">
-                    <div class="card-inner">
-                        <button class="quick-btn" onclick="openSheet('category')" style="width: 100%; margin-bottom: 12px;">
-                            ➕ Nova Categoria
-                        </button>
-                        <div id="categories-list"></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     
@@ -665,6 +838,123 @@
             <span class="section-title">Todos os Lançamentos</span>
         </div>
         <div class="transaction-list" id="full-transactions-list"></div>
+    </div>
+
+    <!-- MORE / SETTINGS VIEW -->
+    <div class="main-content hidden" id="more-view">
+        <div class="settings-header animate-in">
+            <div class="settings-title">⚙️ Configurações</div>
+            <div class="settings-subtitle">Personalize e gerencie seus dados</div>
+        </div>
+        
+        <!-- ESTATÍSTICAS RÁPIDAS -->
+        <div class="stats-grid animate-in">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-transactions">0</div>
+                <div class="stat-label">Lançamentos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-categories">0</div>
+                <div class="stat-label">Categorias</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-banks">0</div>
+                <div class="stat-label">Bancos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-loans">0</div>
+                <div class="stat-label">Dívidas</div>
+            </div>
+        </div>
+        
+        <!-- GRUPO: DADOS -->
+        <div class="settings-group animate-in">
+            <div class="settings-item" onclick="exportData()">
+                <div class="settings-icon blue">📥</div>
+                <div class="settings-content">
+                    <div class="settings-label">Exportar Dados</div>
+                    <div class="settings-desc">Backup em JSON/CSV</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+            <div class="settings-item" onclick="importData()">
+                <div class="settings-icon green">📤</div>
+                <div class="settings-content">
+                    <div class="settings-label">Importar Dados</div>
+                    <div class="settings-desc">Restaurar de arquivo</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+            <div class="settings-item" onclick="shareApp()">
+                <div class="settings-icon purple">🔗</div>
+                <div class="settings-content">
+                    <div class="settings-label">Compartilhar App</div>
+                    <div class="settings-desc">Envie para amigos</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+        </div>
+        
+        <!-- GRUPO: PERSONALIZAÇÃO -->
+        <div class="settings-group animate-in">
+            <div class="settings-item" onclick="toggleThemeSetting()">
+                <div class="settings-icon gray">🌙</div>
+                <div class="settings-content">
+                    <div class="settings-label">Tema Escuro</div>
+                    <div class="settings-desc">Alternar claro/escuro</div>
+                </div>
+                <div class="toggle-switch active" id="theme-toggle"></div>
+            </div>
+            <div class="settings-item" onclick="manageCategories()">
+                <div class="settings-icon orange">🏷️</div>
+                <div class="settings-content">
+                    <div class="settings-label">Gerenciar Categorias</div>
+                    <div class="settings-desc">Adicionar, editar ou excluir</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+            <div class="settings-item" onclick="openSheet('bank')">
+                <div class="settings-icon blue">🏦</div>
+                <div class="settings-content">
+                    <div class="settings-label">Adicionar Banco</div>
+                    <div class="settings-desc">Novo cartão ou conta</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+        </div>
+        
+        <!-- GRUPO: FERRAMENTAS -->
+        <div class="settings-group animate-in">
+            <div class="settings-item" onclick="openSheet('calc')">
+                <div class="settings-icon purple">🧮</div>
+                <div class="settings-content">
+                    <div class="settings-label">Calculadora</div>
+                    <div class="settings-desc">Calcular valores</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+            <div class="settings-item" onclick="openSheet('loan')">
+                <div class="settings-icon red">💳</div>
+                <div class="settings-content">
+                    <div class="settings-label">Nova Dívida</div>
+                    <div class="settings-desc">Empréstimo ou financiamento</div>
+                </div>
+                <div class="settings-arrow">›</div>
+            </div>
+        </div>
+        
+        <!-- ZONA DE PERIGO -->
+        <div class="danger-zone animate-in">
+            <div class="danger-title">⚠️ Zona de Perigo</div>
+            <button class="btn-danger" onclick="clearAllData()">🗑️ Apagar Todos os Dados</button>
+            <button class="btn-danger" onclick="resetSettings()">🔄 Resetar Configurações</button>
+        </div>
+        
+        <!-- INFO DO APP -->
+        <div class="app-info animate-in">
+            <div class="app-version">FinControl v2.0</div>
+            <div class="app-credits">Seu dinheiro sob controle 💰</div>
+        </div>
     </div>
 
     <!-- BOTTOM SHEET OVERLAY -->
@@ -828,6 +1118,39 @@
             <button class="btn-primary" onclick="saveLoan()">Adicionar Dívida</button>
         </div>
     </div>
+    
+    <!-- CATEGORIES MANAGEMENT SHEET -->
+    <div class="bottom-sheet" id="categories-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <h3>Gerenciar Categorias</h3>
+            <button onclick="closeSheet()" style="background: none; border: none; color: var(--text); font-size: 1.5rem;">×</button>
+        </div>
+        <div class="sheet-content">
+            <div class="input-group">
+                <label class="input-label">Nova Categoria</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="input-field" id="new-cat-emoji" placeholder="🏷️" style="width: 60px; text-align: center;" maxlength="2">
+                    <input type="text" class="input-field" id="new-cat-name" placeholder="Nome da categoria" style="flex: 1;">
+                </div>
+                <select class="input-field" id="new-cat-type" style="margin-top: 8px;">
+                    <option value="expense">Despesa</option>
+                    <option value="income">Receita</option>
+                </select>
+                <button class="btn-primary" onclick="addNewCategory()" style="margin-top: 12px;">Adicionar</button>
+            </div>
+            
+            <div class="section-header" style="margin-top: 24px;">
+                <span class="section-title">Categorias de Despesa</span>
+            </div>
+            <div id="manage-expense-cats"></div>
+            
+            <div class="section-header" style="margin-top: 24px;">
+                <span class="section-title">Categorias de Receita</span>
+            </div>
+            <div id="manage-income-cats"></div>
+        </div>
+    </div>
 
     <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
@@ -866,6 +1189,7 @@
         let banks = JSON.parse(localStorage.getItem('fc_banks') || '[]');
         let loans = JSON.parse(localStorage.getItem('fc_loans') || '[]');
         let categories = JSON.parse(localStorage.getItem('fc_cats') || JSON.stringify(defaultCats));
+        let darkMode = localStorage.getItem('fc_darkMode') !== 'false';
         
         let currentAmount = 0;
         let currentType = 'expense';
@@ -876,6 +1200,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('tx-first-date').valueAsDate = new Date();
             updateUI();
+            updateStats();
         });
         
         // UI UPDATES
@@ -949,6 +1274,14 @@
             }
         }
         
+        function updateStats() {
+            document.getElementById('stat-transactions').textContent = expenses.length;
+            document.getElementById('stat-categories').textContent = 
+                Object.keys(categories.expense).length + Object.keys(categories.income).length;
+            document.getElementById('stat-banks').textContent = banks.length;
+            document.getElementById('stat-loans').textContent = loans.length;
+        }
+        
         function getBankBalance(bankId) {
             return expenses.filter(e => e.bankId === bankId).reduce((s, e) => 
                 s + (e.type === 'income' ? e.value : -e.value), 0);
@@ -976,13 +1309,25 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
+            // Hide all views
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('all-transactions-view').classList.add('hidden');
+            document.getElementById('more-view').classList.add('hidden');
+            
             if (nav === 'home') {
                 document.getElementById('main-view').classList.remove('hidden');
-                document.getElementById('all-transactions-view').classList.add('hidden');
             } else if (nav === 'banks') {
                 openSheet('bank');
+                // Keep home active visually
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                event.currentTarget.classList.remove('active');
             } else if (nav === 'loans') {
                 openSheet('loan');
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                event.currentTarget.classList.remove('active');
+            } else if (nav === 'more') {
+                document.getElementById('more-view').classList.remove('hidden');
+                updateStats();
             }
         }
         
@@ -1015,6 +1360,9 @@
                 document.getElementById('bank-sheet').classList.add('active');
             } else if (type === 'loan') {
                 document.getElementById('loan-sheet').classList.add('active');
+            } else if (type === 'category') {
+                renderManageCategories();
+                document.getElementById('categories-sheet').classList.add('active');
             }
         }
         
@@ -1028,10 +1376,8 @@
         
         // KEYPAD
         function addDigit(d) {
-            // CORREÇÃO DO ZERO: Permite digitar zeros à esquerda para formar decimais
             let cents = Math.round(currentAmount * 100);
             
-            // Se está em 0 e digita 0, mantém 0 (mas permite continuar digitando)
             if (cents === 0 && d === 0) {
                 currentAmount = 0;
                 updateAmount();
@@ -1078,6 +1424,67 @@
             selectedCategory = id;
             renderCategories();
             updateAmount();
+        }
+        
+        function renderManageCategories() {
+            const expCats = Object.entries(categories.expense || {}).map(([id, name]) => `
+                <div class="transaction-item">
+                    <div class="tx-icon">${name.split(' ')[0]}</div>
+                    <div class="tx-info">
+                        <div class="tx-title">${name.split(' ').slice(1).join(' ')}</div>
+                    </div>
+                    <button onclick="deleteCategory('expense', '${id}')" style="background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem;">Excluir</button>
+                </div>
+            `).join('');
+            
+            const incCats = Object.entries(categories.income || {}).map(([id, name]) => `
+                <div class="transaction-item">
+                    <div class="tx-icon">${name.split(' ')[0]}</div>
+                    <div class="tx-info">
+                        <div class="tx-title">${name.split(' ').slice(1).join(' ')}</div>
+                    </div>
+                    <button onclick="deleteCategory('income', '${id}')" style="background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem;">Excluir</button>
+                </div>
+            `).join('');
+            
+            document.getElementById('manage-expense-cats').innerHTML = expCats || '<div style="color: var(--text-muted); padding: 12px;">Nenhuma categoria</div>';
+            document.getElementById('manage-income-cats').innerHTML = incCats || '<div style="color: var(--text-muted); padding: 12px;">Nenhuma categoria</div>';
+        }
+        
+        function addNewCategory() {
+            const emoji = document.getElementById('new-cat-emoji').value || '🏷️';
+            const name = document.getElementById('new-cat-name').value.trim();
+            const type = document.getElementById('new-cat-type').value;
+            
+            if (!name) {
+                showToast('Digite um nome');
+                return;
+            }
+            
+            const id = 'cat_' + Date.now();
+            if (!categories[type]) categories[type] = {};
+            categories[type][id] = `${emoji} ${name}`;
+            
+            localStorage.setItem('fc_cats', JSON.stringify(categories));
+            
+            document.getElementById('new-cat-name').value = '';
+            document.getElementById('new-cat-emoji').value = '';
+            
+            renderManageCategories();
+            showToast('Categoria adicionada!');
+        }
+        
+        function deleteCategory(type, id) {
+            if (confirm('Excluir esta categoria?')) {
+                delete categories[type][id];
+                localStorage.setItem('fc_cats', JSON.stringify(categories));
+                renderManageCategories();
+                showToast('Categoria removida');
+            }
+        }
+        
+        function manageCategories() {
+            openSheet('category');
         }
         
         // SAVE TRANSACTION
@@ -1229,12 +1636,107 @@
         
         // EDIT TRANSACTION
         function editTransaction(id) {
-            // Simplified - just delete for now
             if (confirm('Excluir este lançamento?')) {
                 expenses = expenses.filter(e => e.id !== id);
                 localStorage.setItem('fc_expenses', JSON.stringify(expenses));
                 updateUI();
                 showToast('Lançamento removido');
+            }
+        }
+        
+        // SETTINGS FUNCTIONS
+        function exportData() {
+            const data = {
+                expenses,
+                banks,
+                loans,
+                categories,
+                exportDate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fincontrol-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('📥 Backup exportado!');
+        }
+        
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.expenses) expenses = data.expenses;
+                        if (data.banks) banks = data.banks;
+                        if (data.loans) loans = data.loans;
+                        if (data.categories) categories = data.categories;
+                        
+                        localStorage.setItem('fc_expenses', JSON.stringify(expenses));
+                        localStorage.setItem('fc_banks', JSON.stringify(banks));
+                        localStorage.setItem('fc_loans', JSON.stringify(loans));
+                        localStorage.setItem('fc_cats', JSON.stringify(categories));
+                        
+                        updateUI();
+                        showToast('📤 Dados restaurados!');
+                    } catch {
+                        showToast('❌ Arquivo inválido');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function shareApp() {
+            const text = '💰 FinControl - Controle suas finanças de forma simples!';
+            if (navigator.share) {
+                navigator.share({ title: 'FinControl', text });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast('🔗 Link copiado!');
+            }
+        }
+        
+        function toggleThemeSetting() {
+            darkMode = !darkMode;
+            localStorage.setItem('fc_darkMode', darkMode);
+            document.getElementById('theme-toggle').classList.toggle('active');
+            showToast(darkMode ? '🌙 Tema escuro ativado' : '☀️ Tema claro ativado');
+        }
+        
+        function clearAllData() {
+            if (confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados permanentemente. Deseja continuar?')) {
+                if (confirm('Tem certeza? Esta ação não pode ser desfeita.')) {
+                    expenses = [];
+                    banks = [];
+                    loans = [];
+                    categories = JSON.parse(JSON.stringify(defaultCats));
+                    
+                    localStorage.removeItem('fc_expenses');
+                    localStorage.removeItem('fc_banks');
+                    localStorage.removeItem('fc_loans');
+                    localStorage.removeItem('fc_cats');
+                    
+                    updateUI();
+                    updateStats();
+                    showToast('🗑️ Todos os dados apagados');
+                }
+            }
+        }
+        
+        function resetSettings() {
+            if (confirm('Resetar configurações para o padrão?')) {
+                categories = JSON.parse(JSON.stringify(defaultCats));
+                darkMode = true;
+                localStorage.setItem('fc_cats', JSON.stringify(categories));
+                localStorage.setItem('fc_darkMode', darkMode);
+                showToast('✅ Configurações resetadas');
             }
         }
         
