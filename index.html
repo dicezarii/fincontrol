@@ -502,6 +502,7 @@
         
         .installment-table tr.paid { opacity: 0.5; }
         .installment-table tr.next { background: rgba(99,102,241,0.1); }
+        .installment-table tr.amortized { background: rgba(16,185,129,0.1); }
         
         .amortization-tabs {
             display: flex;
@@ -630,8 +631,8 @@
 
         /* Novos estilos para amortização */
         .amortization-box {
-            background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(99,102,241,0.1) 100%);
-            border: 1px solid rgba(16,185,129,0.3);
+            background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(16,185,129,0.1) 100%);
+            border: 1px solid rgba(245,158,11,0.3);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 20px;
@@ -651,7 +652,7 @@
 
         .amortization-input-group button {
             padding: 16px 20px;
-            background: var(--success);
+            background: var(--warning);
             border: none;
             border-radius: var(--radius-sm);
             color: white;
@@ -1404,7 +1405,8 @@
                 saldoDevedor: saldoDevedor, 
                 totalJuros: calc.totalJuros, 
                 schedule: calc.schedule,
-                parcelaPersonalizada: parcelaPersonalizada > 0 ? parcelaPersonalizada : null
+                parcelaPersonalizada: parcelaPersonalizada > 0 ? parcelaPersonalizada : null,
+                parcelasAmortizadas: [] // NOVO: Array para guardar parcelas antecipadas
             });
             
             localStorage.setItem('fc_loans', JSON.stringify(loans));
@@ -1416,7 +1418,7 @@
             viewLoanDetail(loans.length - 1);
         }
         
-        // NOVO: Calcular amortização antecipada
+        // CORREÇÃO: Calcular amortização das ÚLTIMAS parcelas (não das próximas)
         function calcularAmortizacao(index) {
             const loan = loans[index];
             const qtdInput = document.getElementById('amort-qtd');
@@ -1435,16 +1437,22 @@
                 return;
             }
             
-            // Calcular valor total das próximas N parcelas
+            // CORREÇÃO: Pegar as ÚLTIMAS parcelas do contrato (as mais distantes)
+            // Índices no array: 0 a (parcelas-1)
+            // Parcelas pagas: 0 a (parcelasPagas-1) já estão pagas
+            // Parcelas disponíveis: parcelasPagas a (parcelas-1)
+            // Últimas parcelas disponíveis: (parcelas-1) voltando até (parcelas-qtd)
+            
             let valorTotal = 0;
             let valorJuros = 0;
             let valorAmortizacao = 0;
             const parcelasAmortizar = [];
             
+            // Pega as últimas qtd parcelas
             for (let i = 0; i < qtd; i++) {
-                const parcelaIndex = loan.parcelasPagas + i;
-                if (parcelaIndex < loan.schedule.length) {
-                    const p = loan.schedule[parcelaIndex];
+                const indiceNoSchedule = loan.parcelas - 1 - i; // Começa do final
+                if (indiceNoSchedule >= loan.parcelasPagas && indiceNoSchedule < loan.schedule.length) {
+                    const p = loan.schedule[indiceNoSchedule];
                     valorTotal += p.valor;
                     valorJuros += p.juros;
                     valorAmortizacao += p.amortizacao;
@@ -1455,22 +1463,33 @@
                 }
             }
             
-            // Novo saldo devedor após amortizar essas parcelas
-            const ultimaParcelaAmortizada = loan.schedule[loan.parcelasPagas + qtd - 1];
-            const novoSaldo = ultimaParcelaAmortizada ? ultimaParcelaAmortizada.saldo : 0;
-            const economiaJuros = loan.saldoDevedor - valorTotal - novoSaldo;
+            // Ordena para mostrar em ordem crescente (ex: 46, 47, 48)
+            parcelasAmortizar.sort((a, b) => a.num - b.num);
+            
+            // Novo saldo devedor após amortizar essas últimas parcelas
+            // É o saldo da última parcela NÃO amortizada + 1
+            const ultimaParcelaNaoAmortizada = loan.parcelas - qtd - 1;
+            let novoSaldo = 0;
+            if (ultimaParcelaNaoAmortizada >= 0 && ultimaParcelaNaoAmortizada < loan.schedule.length) {
+                novoSaldo = loan.schedule[ultimaParcelaNaoAmortizada].saldo;
+            }
+            
+            // Economia de juros (diferença entre saldo atual e novo saldo + valor pago)
+            const economiaJuros = loan.saldoDevedor - novoSaldo - valorTotal;
             
             // Mostrar resultado
             const resultadoDiv = document.getElementById('amortizacao-resultado');
+            const numerosParcelas = parcelasAmortizar.map(p => `#${p.num}`).join(', ');
+            
             resultadoDiv.innerHTML = `
                 <div class="amortization-result">
                     <div class="amortization-result-item">
-                        <span>Parcelas selecionadas:</span>
-                        <span>#${loan.schedule[loan.parcelasPagas].parcela} a #${loan.schedule[loan.parcelasPagas + qtd - 1].parcela}</span>
+                        <span>Parcelas a amortizar (últimas):</span>
+                        <span style="font-weight: 600; color: var(--warning);">${numerosParcelas}</span>
                     </div>
                     <div class="amortization-result-item">
                         <span>Valor total a pagar:</span>
-                        <span style="color: var(--primary); font-weight: 600;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                        <span style="color: var(--success); font-weight: 600;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
                     <div class="amortization-result-item" style="font-size: 0.8rem; color: var(--text-muted);">
                         <span>↓ Juros incluídos:</span>
@@ -1485,13 +1504,19 @@
                         <span>R$ ${novoSaldo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                     </div>
                     <div class="amortization-result-item" style="color: var(--success);">
-                        <span>Parcelas restantes:</span>
-                        <span>${loan.parcelas - loan.parcelasPagas - qtd}</span>
+                        <span>Novo prazo:</span>
+                        <span>${parcelasRestantes - qtd} parcelas restantes</span>
                     </div>
+                    ${economiaJuros > 0 ? `
+                    <div class="amortization-result-item" style="color: var(--success); font-size: 0.85rem; margin-top: 8px;">
+                        <span>💰 Economia de juros:</span>
+                        <span>R$ ${economiaJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                    </div>
+                    ` : ''}
                 </div>
                 <div style="margin-top: 12px; display: flex; gap: 8px;">
                     <button class="btn-success" onclick="confirmarAmortizacao(${index}, ${qtd})" style="flex: 1;">
-                        💸 Confirmar Amortização
+                        ⚡ Confirmar Amortização
                     </button>
                     <button class="btn-secondary" onclick="limparAmortizacao()" style="flex: 0.3;">
                         Limpar
@@ -1503,7 +1528,8 @@
             loan.tempAmortizacao = {
                 qtd: qtd,
                 valorTotal: valorTotal,
-                novoSaldo: novoSaldo
+                novoSaldo: novoSaldo,
+                parcelasNumeros: parcelasAmortizar.map(p => p.num)
             };
         }
         
@@ -1517,7 +1543,7 @@
             const loan = loans[index];
             if (!loan.tempAmortizacao) return;
             
-            const { valorTotal, novoSaldo } = loan.tempAmortizacao;
+            const { valorTotal, novoSaldo, parcelasNumeros } = loan.tempAmortizacao;
             
             // Adicionar despesa com o valor total da amortização
             expenses.push({ 
@@ -1525,22 +1551,25 @@
                 type: 'expense', 
                 value: valorTotal, 
                 category: 'housing', 
-                desc: `Amortização ${qtd}x - ${loan.desc} (Antecipado)`, 
+                desc: `Amortização antecipada ${qtd}x - ${loan.desc} (${parcelasNumeros.join(', ')})`, 
                 date: new Date().toISOString().split('T')[0],
                 isAmortization: true,
                 loanId: loan.id,
-                qtdParcelas: qtd
+                qtdParcelas: qtd,
+                parcelasAmortizadas: parcelasNumeros
             });
             
-            // Atualizar empréstimo
-            loan.parcelasPagas += qtd;
-            loan.saldoDevedor = novoSaldo;
-            
-            // Se amortizou todas as parcelas restantes
-            if (loan.parcelasPagas >= loan.parcelas) {
-                loan.parcelasPagas = loan.parcelas;
-                loan.saldoDevedor = 0;
+            // CORREÇÃO: Marcar as parcelas específicas como amortizadas
+            if (!loan.parcelasAmortizadas) {
+                loan.parcelasAmortizadas = [];
             }
+            loan.parcelasAmortizadas.push(...parcelasNumeros);
+            
+            // Reduzir o total de parcelas do contrato
+            loan.parcelas -= qtd;
+            
+            // Atualizar saldo devedor
+            loan.saldoDevedor = novoSaldo;
             
             // Limpar temp
             delete loan.tempAmortizacao;
@@ -1548,7 +1577,7 @@
             localStorage.setItem('fc_expenses', JSON.stringify(expenses));
             localStorage.setItem('fc_loans', JSON.stringify(loans));
             
-            showToast(`✅ ${qtd} parcelas amortizadas!`);
+            showToast(`✅ ${qtd} parcelas antecipadas! Novo prazo: ${loan.parcelas - loan.parcelasPagas} parcelas`);
             updateUI();
             viewLoanDetail(index);
         }
@@ -1559,11 +1588,15 @@
             const nextParcel = loan.schedule[loan.parcelasPagas] || null;
             const parcelasRestantes = loan.parcelas - loan.parcelasPagas;
             
+            // Identificar quais parcelas foram amortizadas para mostrar na tabela
+            const amortizadas = loan.parcelasAmortizadas || [];
+            
             let html = `
                 <div style="margin-bottom: 20px;">
                     <h2 style="font-size: 1.3rem; margin-bottom: 8px;">${loan.desc}</h2>
                     <span style="background: ${loan.amortization === 'sac' ? 'rgba(59,130,246,0.2)' : 'rgba(139,92,246,0.2)'}; color: ${loan.amortization === 'sac' ? 'var(--info)' : 'var(--primary)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;">${loan.amortization.toUpperCase()}</span>
                     ${loan.parcelaPersonalizada ? '<span style="background: rgba(245,158,11,0.2); color: var(--warning); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; margin-left: 8px;">Valor Ajustado</span>' : ''}
+                    ${amortizadas.length > 0 ? `<span style="background: rgba(16,185,129,0.2); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; margin-left: 8px;">${amortizadas.length} Antecipada${amortizadas.length > 1 ? 's' : ''}</span>` : ''}
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
@@ -1575,7 +1608,7 @@
                         <div style="font-size: 1.1rem; font-weight: 700;">${loan.taxa}% a.m.</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Juros Total Estimado</div>
                         <div style="font-size: 1.1rem; font-weight: 700; color: var(--danger);">R$ ${loan.totalJuros.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     </div>
                     <div style="background: var(--bg); padding: 16px; border-radius: 12px;">
@@ -1596,33 +1629,33 @@
             if (nextParcel && loan.parcelasPagas < loan.parcelas) {
                 html += `
                     <div style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                        <div style="font-size: 0.875rem; color: var(--text-muted);">Próxima Parcela Normal (#${nextParcel.parcela})</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Próxima Parcela (#${nextParcel.parcela})</div>
                         <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary); margin: 4px 0;">R$ ${nextParcel.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted);">Juros: R$ ${nextParcel.juros.toFixed(2)} | Amort: R$ ${nextParcel.amortizacao.toFixed(2)}</div>
-                        <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-top: 12px;">💸 Pagar Apenas Esta</button>
+                        <button class="btn-primary" onclick="payLoanParcel(${index})" style="margin-top: 12px;">💸 Pagar Parcela Normal</button>
                     </div>`;
             } else if (loan.parcelasPagas >= loan.parcelas) {
                 html += `
                     <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center;">
                         <div style="font-size: 1.2rem; font-weight: 700; color: var(--success);">✅ Empréstimo Quitado</div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted);">Todas as ${loan.parcelas} parcelas foram pagas</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Todas as parcelas foram pagas</div>
                     </div>`;
             }
             
-            // NOVO: Seção de Amortização Antecipada (se houver parcelas restantes)
+            // Seção de Amortização Antecipada (se houver parcelas restantes)
             if (parcelasRestantes > 1) {
                 html += `
                     <div class="amortization-box">
                         <h4 style="margin-bottom: 12px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
-                            ⚡ Amortização Antecipada
+                            ⚡ Amortização Antecipada (Últimas Parcelas)
                         </h4>
                         <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-                            Digite quantas parcelas deseja amortizar de uma vez (geralmente as últimas do contrato).
+                            Digite quantas parcelas deseja amortizar. O sistema quitará as <strong>últimas</strong> parcelas do contrato (as mais distantes), reduzindo o prazo total.
                         </p>
                         <div class="amortization-input-group">
                             <div class="input-group">
-                                <label class="input-label">Qtd. Parcelas (Máx: ${parcelasRestantes})</label>
-                                <input type="number" class="input-field" id="amort-qtd" min="1" max="${parcelasRestantes}" placeholder="Ex: 12">
+                                <label class="input-label">Qtd. Parcelas (Máx: ${parcelasRestantes - 1})</label>
+                                <input type="number" class="input-field" id="amort-qtd" min="1" max="${parcelasRestantes - 1}" placeholder="Ex: 12">
                             </div>
                             <button onclick="calcularAmortizacao(${index})">Calcular</button>
                         </div>
@@ -1632,10 +1665,24 @@
             
             let tableRows = '';
             const startIdx = Math.max(0, loan.parcelasPagas - 2);
-            const endIdx = Math.min(loan.schedule.length, startIdx + 12);
+            const endIdx = Math.min(loan.schedule.length, startIdx + 15);
+            
             for (let i = startIdx; i < endIdx; i++) {
                 const p = loan.schedule[i];
-                tableRows += `<tr class="${i < loan.parcelasPagas ? 'paid' : ''} ${i === loan.parcelasPagas ? 'next' : ''}"><td>${p.parcela}</td><td>R$ ${p.valor.toFixed(2)}</td><td>R$ ${p.juros.toFixed(2)}</td><td>R$ ${p.amortizacao.toFixed(2)}</td><td>R$ ${p.saldo.toFixed(2)}</td></tr>`;
+                const isPaid = i < loan.parcelasPagas;
+                const isAmortized = amortizadas.includes(p.parcela);
+                const isNext = i === loan.parcelasPagas;
+                
+                let rowClass = '';
+                if (isPaid) rowClass = 'paid';
+                else if (isAmortized) rowClass = 'amortized';
+                else if (isNext) rowClass = 'next';
+                
+                let statusText = '';
+                if (isPaid) statusText = ' (Paga)';
+                else if (isAmortized) statusText = ' ⚡';
+                
+                tableRows += `<tr class="${rowClass}"><td>${p.parcela}${statusText}</td><td>R$ ${p.valor.toFixed(2)}</td><td>R$ ${p.juros.toFixed(2)}</td><td>R$ ${p.amortizacao.toFixed(2)}</td><td>R$ ${p.saldo.toFixed(2)}</td></tr>`;
             }
             
             html += `
@@ -1811,15 +1858,21 @@
             if (bankSelect) bankSelect.innerHTML = '<option value="">Selecione...</option>' + banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
             
             document.getElementById('recent-list').innerHTML = expenses.slice(0, 5).map(e => renderTx(e)).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Nenhum lançamento</div>';
-            document.getElementById('loans-list').innerHTML = loans.map((l, index) => `
+            document.getElementById('loans-list').innerHTML = loans.map((l, index) => {
+                const amortizadas = l.parcelasAmortizadas || [];
+                return `
                 <div class="loan-card" onclick="viewLoanDetail(${index})">
                     <div class="loan-header">
                         <div><div class="loan-title">${l.desc}</div><div style="font-size: 0.8rem; color: var(--text-muted);">${l.amortization.toUpperCase()} | ${l.parcelas}x</div></div>
                         <div class="loan-amount">R$ ${l.saldoDevedor.toLocaleString('pt-BR', {minimumFractionDigits: 0})}</div>
                     </div>
                     <div class="progress-bar"><div class="progress-fill" style="width: ${((l.parcelasPagas || 0) / l.parcelas) * 100}%"></div></div>
-                    <div class="loan-stats"><span>${l.parcelasPagas || 0} de ${l.parcelas}</span><span>Próx: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>
-                </div>`).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo</div>';
+                    <div class="loan-stats">
+                        <span>${l.parcelasPagas || 0} de ${l.parcelas}</span>
+                        <span>${amortizadas.length > 0 ? `⚡ ${amortizadas.length} antec.` : `Próx: R$ ${(l.schedule[l.parcelasPagas]?.valor || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`}</span>
+                    </div>
+                </div>`;
+            }).join('') || '<div style="color: var(--text-muted); text-align: center; padding: 20px;">Nenhum empréstimo</div>';
         }
         
         function renderTx(e) {
@@ -1830,7 +1883,7 @@
             const isAmort = e.isAmortization;
             const icon = isAmort ? '⚡' : cat.split(' ')[0];
             const title = isAmort ? e.desc : (e.desc || cat);
-            const extraInfo = isAmort ? `<span style="color: var(--success); font-size: 0.7rem;">${e.qtdParcelas}x parcelas</span>` : '';
+            const extraInfo = isAmort ? `<span style="color: var(--success); font-size: 0.7rem;">Antecipação ${e.qtdParcelas}x</span>` : '';
             
             return `
             <div class="transaction-item" onclick="if(confirm('Excluir?')) deleteTransaction(${e.id})">
